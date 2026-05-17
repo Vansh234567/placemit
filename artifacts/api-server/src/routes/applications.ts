@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, applicationsTable } from "@workspace/db";
+import { serializeDates, serializeRows } from "../lib/serialize";
 import {
   ListApplicationsResponse,
   CreateApplicationBody,
@@ -13,7 +14,7 @@ const router: IRouter = Router();
 
 router.get("/applications", async (req, res): Promise<void> => {
   const applications = await db.select().from(applicationsTable).orderBy(desc(applicationsTable.appliedAt));
-  res.json(ListApplicationsResponse.parse(applications));
+  res.json(ListApplicationsResponse.parse(serializeRows(applications)));
 });
 
 router.post("/applications", async (req, res): Promise<void> => {
@@ -23,7 +24,7 @@ router.post("/applications", async (req, res): Promise<void> => {
     return;
   }
   const [application] = await db.insert(applicationsTable).values(parsed.data).returning();
-  res.status(201).json(application);
+  res.status(201).json(serializeDates(application));
 });
 
 router.patch("/applications/:id", async (req, res): Promise<void> => {
@@ -46,7 +47,7 @@ router.patch("/applications/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Application not found" });
     return;
   }
-  res.json(UpdateApplicationResponse.parse(application));
+  res.json(UpdateApplicationResponse.parse(serializeDates(application)));
 });
 
 export default router;

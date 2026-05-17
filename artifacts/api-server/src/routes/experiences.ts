@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, experiencesTable } from "@workspace/db";
+import { serializeDates, serializeRows } from "../lib/serialize";
 import {
   ListExperiencesResponse,
   GetExperienceResponse,
@@ -22,7 +23,7 @@ router.get("/experiences", async (req, res): Promise<void> => {
     query = query.where(eq(experiencesTable.outcome, queryParams.data.outcome));
   }
   const experiences = await query.orderBy(desc(experiencesTable.createdAt));
-  res.json(ListExperiencesResponse.parse(experiences));
+  res.json(ListExperiencesResponse.parse(serializeRows(experiences)));
 });
 
 router.post("/experiences", async (req, res): Promise<void> => {
@@ -32,7 +33,7 @@ router.post("/experiences", async (req, res): Promise<void> => {
     return;
   }
   const [experience] = await db.insert(experiencesTable).values(parsed.data).returning();
-  res.status(201).json(GetExperienceResponse.parse(experience));
+  res.status(201).json(GetExperienceResponse.parse(serializeDates(experience)));
 });
 
 router.get("/experiences/:id", async (req, res): Promise<void> => {
@@ -46,7 +47,7 @@ router.get("/experiences/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Experience not found" });
     return;
   }
-  res.json(GetExperienceResponse.parse(experience));
+  res.json(GetExperienceResponse.parse(serializeDates(experience)));
 });
 
 export default router;

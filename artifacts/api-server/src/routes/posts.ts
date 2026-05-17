@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, sql } from "drizzle-orm";
 import { db, postsTable, commentsTable } from "@workspace/db";
+import { serializeDates, serializeRows } from "../lib/serialize";
 import {
   ListPostsResponse,
   GetPostResponse,
@@ -21,7 +22,7 @@ const router: IRouter = Router();
 
 router.get("/posts/trending", async (req, res): Promise<void> => {
   const posts = await db.select().from(postsTable).orderBy(desc(postsTable.upvotes)).limit(10);
-  res.json(GetTrendingPostsResponse.parse(posts));
+  res.json(GetTrendingPostsResponse.parse(serializeRows(posts)));
 });
 
 router.get("/posts", async (req, res): Promise<void> => {
@@ -35,7 +36,7 @@ router.get("/posts", async (req, res): Promise<void> => {
     query = query.where(eq(postsTable.category, queryParams.data.category));
   }
   const posts = await query.orderBy(desc(postsTable.createdAt));
-  res.json(ListPostsResponse.parse(posts));
+  res.json(ListPostsResponse.parse(serializeRows(posts)));
 });
 
 router.post("/posts", async (req, res): Promise<void> => {
@@ -45,7 +46,7 @@ router.post("/posts", async (req, res): Promise<void> => {
     return;
   }
   const [post] = await db.insert(postsTable).values(parsed.data).returning();
-  res.status(201).json(GetPostResponse.parse(post));
+  res.status(201).json(GetPostResponse.parse(serializeDates(post)));
 });
 
 router.get("/posts/:id", async (req, res): Promise<void> => {
@@ -59,7 +60,7 @@ router.get("/posts/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Post not found" });
     return;
   }
-  res.json(GetPostResponse.parse(post));
+  res.json(GetPostResponse.parse(serializeDates(post)));
 });
 
 router.delete("/posts/:id", async (req, res): Promise<void> => {
@@ -91,7 +92,7 @@ router.post("/posts/:id/upvote", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Post not found" });
     return;
   }
-  res.json(UpvotePostResponse.parse(post));
+  res.json(UpvotePostResponse.parse(serializeDates(post)));
 });
 
 // Comments
@@ -102,7 +103,7 @@ router.get("/posts/:postId/comments", async (req, res): Promise<void> => {
     return;
   }
   const comments = await db.select().from(commentsTable).where(eq(commentsTable.postId, params.data.postId)).orderBy(desc(commentsTable.createdAt));
-  res.json(ListCommentsResponse.parse(comments));
+  res.json(ListCommentsResponse.parse(serializeRows(comments)));
 });
 
 router.post("/posts/:postId/comments", async (req, res): Promise<void> => {
@@ -122,7 +123,7 @@ router.post("/posts/:postId/comments", async (req, res): Promise<void> => {
     .returning();
   // increment commentsCount
   await db.update(postsTable).set({ commentsCount: sql`${postsTable.commentsCount} + 1` }).where(eq(postsTable.id, params.data.postId));
-  res.status(201).json(comment);
+  res.status(201).json(serializeDates(comment));
 });
 
 export default router;

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, jobsTable } from "@workspace/db";
+import { serializeDates, serializeRows } from "../lib/serialize";
 import {
   ListJobsResponse,
   GetJobResponse,
@@ -26,7 +27,7 @@ router.get("/jobs", async (req, res): Promise<void> => {
     query = query.where(eq(jobsTable.type, queryParams.data.type));
   }
   const jobs = await query.orderBy(desc(jobsTable.createdAt));
-  res.json(ListJobsResponse.parse(jobs));
+  res.json(ListJobsResponse.parse(serializeRows(jobs)));
 });
 
 router.post("/jobs", async (req, res): Promise<void> => {
@@ -36,7 +37,7 @@ router.post("/jobs", async (req, res): Promise<void> => {
     return;
   }
   const [job] = await db.insert(jobsTable).values(parsed.data).returning();
-  res.status(201).json(GetJobResponse.parse(job));
+  res.status(201).json(GetJobResponse.parse(serializeDates(job)));
 });
 
 router.get("/jobs/:id", async (req, res): Promise<void> => {
@@ -50,7 +51,7 @@ router.get("/jobs/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Job not found" });
     return;
   }
-  res.json(GetJobResponse.parse(job));
+  res.json(GetJobResponse.parse(serializeDates(job)));
 });
 
 router.patch("/jobs/:id", async (req, res): Promise<void> => {
@@ -69,7 +70,7 @@ router.patch("/jobs/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Job not found" });
     return;
   }
-  res.json(UpdateJobResponse.parse(job));
+  res.json(UpdateJobResponse.parse(serializeDates(job)));
 });
 
 router.delete("/jobs/:id", async (req, res): Promise<void> => {

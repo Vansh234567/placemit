@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { db, companiesTable } from "@workspace/db";
 import {
   ListCompaniesResponse,
@@ -7,12 +7,13 @@ import {
   GetCompanyParams,
   CreateCompanyBody,
 } from "@workspace/api-zod";
+import { serializeDates, serializeRows } from "../lib/serialize";
 
 const router: IRouter = Router();
 
 router.get("/companies", async (req, res): Promise<void> => {
   const companies = await db.select().from(companiesTable).orderBy(desc(companiesTable.placementsCount));
-  res.json(ListCompaniesResponse.parse(companies));
+  res.json(ListCompaniesResponse.parse(serializeRows(companies)));
 });
 
 router.post("/companies", async (req, res): Promise<void> => {
@@ -22,7 +23,7 @@ router.post("/companies", async (req, res): Promise<void> => {
     return;
   }
   const [company] = await db.insert(companiesTable).values(parsed.data).returning();
-  res.status(201).json(GetCompanyResponse.parse(company));
+  res.status(201).json(GetCompanyResponse.parse(serializeDates(company)));
 });
 
 router.get("/companies/:id", async (req, res): Promise<void> => {
@@ -36,7 +37,7 @@ router.get("/companies/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Company not found" });
     return;
   }
-  res.json(GetCompanyResponse.parse(company));
+  res.json(GetCompanyResponse.parse(serializeDates(company)));
 });
 
 export default router;

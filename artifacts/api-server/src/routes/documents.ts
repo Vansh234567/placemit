@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, documentsTable } from "@workspace/db";
+import { serializeDates, serializeRows } from "../lib/serialize";
 import {
   ListDocumentsResponse,
   CreateDocumentBody,
@@ -11,7 +12,7 @@ const router: IRouter = Router();
 
 router.get("/documents", async (req, res): Promise<void> => {
   const documents = await db.select().from(documentsTable).orderBy(desc(documentsTable.createdAt));
-  res.json(ListDocumentsResponse.parse(documents));
+  res.json(ListDocumentsResponse.parse(serializeRows(documents)));
 });
 
 router.post("/documents", async (req, res): Promise<void> => {
@@ -21,7 +22,7 @@ router.post("/documents", async (req, res): Promise<void> => {
     return;
   }
   const [document] = await db.insert(documentsTable).values(parsed.data).returning();
-  res.status(201).json(document);
+  res.status(201).json(serializeDates(document));
 });
 
 router.delete("/documents/:id", async (req, res): Promise<void> => {

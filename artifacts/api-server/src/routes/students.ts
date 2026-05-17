@@ -10,12 +10,13 @@ import {
   UpdateStudentBody,
   UpdateStudentResponse,
 } from "@workspace/api-zod";
+import { serializeDates, serializeRows } from "../lib/serialize";
 
 const router: IRouter = Router();
 
 router.get("/students", async (req, res): Promise<void> => {
   const students = await db.select().from(studentsTable).orderBy(desc(studentsTable.createdAt));
-  res.json(ListStudentsResponse.parse(students));
+  res.json(ListStudentsResponse.parse(serializeRows(students)));
 });
 
 router.post("/students", async (req, res): Promise<void> => {
@@ -25,7 +26,7 @@ router.post("/students", async (req, res): Promise<void> => {
     return;
   }
   const [student] = await db.insert(studentsTable).values(parsed.data).returning();
-  res.status(201).json(GetStudentResponse.parse(student));
+  res.status(201).json(GetStudentResponse.parse(serializeDates(student)));
 });
 
 router.get("/students/:id", async (req, res): Promise<void> => {
@@ -39,7 +40,7 @@ router.get("/students/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Student not found" });
     return;
   }
-  res.json(GetStudentResponse.parse(student));
+  res.json(GetStudentResponse.parse(serializeDates(student)));
 });
 
 router.patch("/students/:id", async (req, res): Promise<void> => {
@@ -58,7 +59,7 @@ router.patch("/students/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Student not found" });
     return;
   }
-  res.json(UpdateStudentResponse.parse(student));
+  res.json(UpdateStudentResponse.parse(serializeDates(student)));
 });
 
 export default router;

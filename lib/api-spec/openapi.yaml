@@ -1,22 +1,39 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: PlaceMIT - College Placement Community Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: jobs
+    description: Job and internship listings
+  - name: companies
+    description: Company profiles
+  - name: students
+    description: Student profiles
+  - name: posts
+    description: Community forum posts
+  - name: comments
+    description: Post comments
+  - name: experiences
+    description: Placement experiences
+  - name: documents
+    description: Resume and document management
+  - name: applications
+    description: Job applications
+  - name: dashboard
+    description: Dashboard and stats
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +41,594 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Jobs
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: List all job/internship listings
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [full-time, internship, part-time]
+        - name: companyId
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+    post:
+      operationId: createJob
+      tags: [jobs]
+      summary: Create a job listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobInput"
+      responses:
+        "201":
+          description: Created job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get a specific job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+    patch:
+      operationId: updateJob
+      tags: [jobs]
+      summary: Update a job listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobUpdate"
+      responses:
+        "200":
+          description: Updated job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+    delete:
+      operationId: deleteJob
+      tags: [jobs]
+      summary: Delete a job listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Companies
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List all companies
+      responses:
+        "200":
+          description: List of companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Company"
+    post:
+      operationId: createCompany
+      tags: [companies]
+      summary: Create a company profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyInput"
+      responses:
+        "201":
+          description: Created company
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
+  /companies/{id}:
+    get:
+      operationId: getCompany
+      tags: [companies]
+      summary: Get a company profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Company details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
+  # Students
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all student profiles
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Create a student profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInput"
+      responses:
+        "201":
+          description: Created student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get a student profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    patch:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudentUpdate"
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  # Community Posts
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List community posts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [general, interview-prep, resume-help, offers, advice]
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a community post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Created post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/{id}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a community post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    delete:
+      operationId: deletePost
+      tags: [posts]
+      summary: Delete a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /posts/{id}/upvote:
+    post:
+      operationId: upvotePost
+      tags: [posts]
+      summary: Upvote a post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  # Comments
+  /posts/{postId}/comments:
+    get:
+      operationId: listComments
+      tags: [comments]
+      summary: List comments on a post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+    post:
+      operationId: createComment
+      tags: [comments]
+      summary: Add a comment to a post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        "201":
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  # Placement Experiences
+  /experiences:
+    get:
+      operationId: listExperiences
+      tags: [experiences]
+      summary: List placement experiences
+      parameters:
+        - name: companyId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: outcome
+          in: query
+          schema:
+            type: string
+            enum: [selected, rejected, on-hold]
+      responses:
+        "200":
+          description: List of experiences
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Experience"
+    post:
+      operationId: createExperience
+      tags: [experiences]
+      summary: Share a placement experience
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExperienceInput"
+      responses:
+        "201":
+          description: Created experience
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+
+  /experiences/{id}:
+    get:
+      operationId: getExperience
+      tags: [experiences]
+      summary: Get a placement experience
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Experience details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experience"
+
+  # Documents
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List documents in the file explorer
+      responses:
+        "200":
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Add a document reference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "201":
+          description: Created document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  /documents/{id}:
+    delete:
+      operationId: deleteDocument
+      tags: [documents]
+      summary: Delete a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # Applications
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List job applications
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Apply for a job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Created application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+
+  /applications/{id}:
+    patch:
+      operationId: updateApplication
+      tags: [applications]
+      summary: Update application status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdate"
+      responses:
+        "200":
+          description: Updated application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+
+  # Dashboard / Stats (Wow endpoints)
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get placement statistics for the dashboard
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Recent activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/top-companies:
+    get:
+      operationId: getTopCompanies
+      tags: [dashboard]
+      summary: Get top hiring companies by placements
+      responses:
+        "200":
+          description: Top companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CompanyPlacementStat"
+
+  /posts/trending:
+    get:
+      operationId: getTrendingPosts
+      tags: [posts]
+      summary: Get trending community posts
+      responses:
+        "200":
+          description: Trending posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +639,460 @@ components:
       required:
         - status
 
+    # Job schemas
+    Job:
+      type: object
+      required: [id, title, companyId, companyName, type, location, stipend, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        companyId:
+          type: integer
+        companyName:
+          type: string
+        type:
+          type: string
+          enum: [full-time, internship, part-time]
+        location:
+          type: string
+        stipend:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        requirements:
+          type: ["string", "null"]
+        deadline:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    JobInput:
+      type: object
+      required: [title, companyId, type, location]
+      properties:
+        title:
+          type: string
+        companyId:
+          type: integer
+        type:
+          type: string
+          enum: [full-time, internship, part-time]
+        location:
+          type: string
+        stipend:
+          type: string
+        description:
+          type: string
+        requirements:
+          type: string
+        deadline:
+          type: string
+
+    JobUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        location:
+          type: string
+        stipend:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+
+    # Company schemas
+    Company:
+      type: object
+      required: [id, name, sector, logoUrl, placementsCount, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sector:
+          type: string
+        logoUrl:
+          type: ["string", "null"]
+        website:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        placementsCount:
+          type: integer
+        avgPackage:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    CompanyInput:
+      type: object
+      required: [name, sector]
+      properties:
+        name:
+          type: string
+        sector:
+          type: string
+        logoUrl:
+          type: string
+        website:
+          type: string
+        description:
+          type: string
+        avgPackage:
+          type: string
+
+    # Student schemas
+    Student:
+      type: object
+      required: [id, name, rollNo, branch, year, cgpa, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        rollNo:
+          type: string
+        branch:
+          type: string
+        year:
+          type: integer
+        cgpa:
+          type: number
+        bio:
+          type: ["string", "null"]
+        skills:
+          type: ["string", "null"]
+        linkedinUrl:
+          type: ["string", "null"]
+        githubUrl:
+          type: ["string", "null"]
+        resumeUrl:
+          type: ["string", "null"]
+        placedAt:
+          type: ["string", "null"]
+        packageOffered:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    StudentInput:
+      type: object
+      required: [name, rollNo, branch, year, cgpa]
+      properties:
+        name:
+          type: string
+        rollNo:
+          type: string
+        branch:
+          type: string
+        year:
+          type: integer
+        cgpa:
+          type: number
+        bio:
+          type: string
+        skills:
+          type: string
+        linkedinUrl:
+          type: string
+        githubUrl:
+          type: string
+        resumeUrl:
+          type: string
+        packageOffered:
+          type: string
+        avatarUrl:
+          type: string
+
+    StudentUpdate:
+      type: object
+      properties:
+        bio:
+          type: string
+        skills:
+          type: string
+        linkedinUrl:
+          type: string
+        githubUrl:
+          type: string
+        resumeUrl:
+          type: string
+        placedAt:
+          type: string
+        packageOffered:
+          type: string
+
+    # Post schemas
+    Post:
+      type: object
+      required: [id, title, content, authorName, category, upvotes, commentsCount, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        authorName:
+          type: string
+        authorAvatarUrl:
+          type: ["string", "null"]
+        category:
+          type: string
+          enum: [general, interview-prep, resume-help, offers, advice]
+        upvotes:
+          type: integer
+        commentsCount:
+          type: integer
+        createdAt:
+          type: string
+
+    PostInput:
+      type: object
+      required: [title, content, authorName, category]
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        authorName:
+          type: string
+        authorAvatarUrl:
+          type: string
+        category:
+          type: string
+          enum: [general, interview-prep, resume-help, offers, advice]
+
+    # Comment schemas
+    Comment:
+      type: object
+      required: [id, postId, content, authorName, createdAt]
+      properties:
+        id:
+          type: integer
+        postId:
+          type: integer
+        content:
+          type: string
+        authorName:
+          type: string
+        authorAvatarUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    CommentInput:
+      type: object
+      required: [content, authorName]
+      properties:
+        content:
+          type: string
+        authorName:
+          type: string
+        authorAvatarUrl:
+          type: string
+
+    # Experience schemas
+    Experience:
+      type: object
+      required: [id, studentName, companyName, role, outcome, rounds, createdAt]
+      properties:
+        id:
+          type: integer
+        studentName:
+          type: string
+        studentAvatarUrl:
+          type: ["string", "null"]
+        companyId:
+          type: ["integer", "null"]
+        companyName:
+          type: string
+        role:
+          type: string
+        outcome:
+          type: string
+          enum: [selected, rejected, on-hold]
+        rounds:
+          type: integer
+        description:
+          type: ["string", "null"]
+        tips:
+          type: ["string", "null"]
+        packageOffered:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ExperienceInput:
+      type: object
+      required: [studentName, companyName, role, outcome, rounds]
+      properties:
+        studentName:
+          type: string
+        studentAvatarUrl:
+          type: string
+        companyId:
+          type: integer
+        companyName:
+          type: string
+        role:
+          type: string
+        outcome:
+          type: string
+          enum: [selected, rejected, on-hold]
+        rounds:
+          type: integer
+        description:
+          type: string
+        tips:
+          type: string
+        packageOffered:
+          type: string
+
+    # Document schemas
+    Document:
+      type: object
+      required: [id, name, type, url, studentId, studentName, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [resume, offer-letter, certificate, other]
+        url:
+          type: string
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        sizeKb:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    DocumentInput:
+      type: object
+      required: [name, type, url, studentId, studentName]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [resume, offer-letter, certificate, other]
+        url:
+          type: string
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        sizeKb:
+          type: integer
+
+    # Application schemas
+    Application:
+      type: object
+      required: [id, studentId, studentName, jobId, jobTitle, companyName, status, appliedAt]
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        jobId:
+          type: integer
+        jobTitle:
+          type: string
+        companyName:
+          type: string
+        status:
+          type: string
+          enum: [applied, shortlisted, interview, selected, rejected]
+        appliedAt:
+          type: string
+
+    ApplicationInput:
+      type: object
+      required: [studentId, studentName, jobId, jobTitle, companyName]
+      properties:
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        jobId:
+          type: integer
+        jobTitle:
+          type: string
+        companyName:
+          type: string
+
+    ApplicationUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [applied, shortlisted, interview, selected, rejected]
+
+    # Dashboard / Stats schemas
+    DashboardStats:
+      type: object
+      required: [totalStudents, totalPlaced, totalCompanies, totalJobs, avgPackage, placementRate, activeApplications]
+      properties:
+        totalStudents:
+          type: integer
+        totalPlaced:
+          type: integer
+        totalCompanies:
+          type: integer
+        totalJobs:
+          type: integer
+        avgPackage:
+          type: string
+        placementRate:
+          type: number
+        activeApplications:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, type, message, actorName, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [placement, application, experience, post, job]
+        message:
+          type: string
+        actorName:
+          type: string
+        actorAvatarUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    CompanyPlacementStat:
+      type: object
+      required: [companyId, companyName, logoUrl, placementsCount, avgPackage]
+      properties:
+        companyId:
+          type: integer
+        companyName:
+          type: string
+        logoUrl:
+          type: ["string", "null"]
+        placementsCount:
+          type: integer
+        avgPackage:
+          type: ["string", "null"]

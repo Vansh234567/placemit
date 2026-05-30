@@ -74,7 +74,11 @@ function AuthGate() {
   }
 
   // Not logged in → show login page
-  if (!auth.session || !auth.profile) {
+  // Note: only block on session, not profile.
+  // Profile may be null due to RLS policies or a race; that's recoverable
+  // inside the app. Blocking on profile here traps users in an infinite
+  // login loop when their profile row exists but SELECT is restricted.
+  if (!auth.session) {
     return <LoginPage />;
   }
 

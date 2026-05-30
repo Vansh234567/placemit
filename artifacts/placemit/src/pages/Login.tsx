@@ -48,7 +48,7 @@ export default function LoginPage() {
     const { data, error: err } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: otp,
-      type: "email",
+      type: "email" as any,
     });
     if (err) { setLoading(false); setError(err.message); return; }
 

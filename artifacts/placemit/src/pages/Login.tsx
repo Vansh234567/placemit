@@ -50,6 +50,11 @@ export default function LoginPage() {
       token: otp,
       type: "email" as any,
     });
+    console.log("[verifyOtp] data:", data);
+    console.log("[verifyOtp] session:", data?.session);
+    console.log("[verifyOtp] user:", data?.user);
+    console.log("[verifyOtp] error:", err);
+
     if (err) { setLoading(false); setError(err.message); return; }
 
     // Create profile row if it doesn't exist yet

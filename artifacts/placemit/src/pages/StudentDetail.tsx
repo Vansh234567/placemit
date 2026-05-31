@@ -1,5 +1,6 @@
 import { useGetStudent, getGetStudentQueryKey } from "@workspace/api-client-react";
 import { useParams, Link } from "wouter";
+import { yearToLabel } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +52,7 @@ export default function StudentDetail() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">{student.name}</h1>
               <p className="text-lg text-muted-foreground mt-1">
-                {student.branch} &bull; Year {student.year}
+                {student.branch} &bull; {yearToLabel(student.year)}
               </p>
             </div>
             

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase, ALLOWED_DOMAIN, BRANCHES } from "@/lib/supabase";
+import { supabase, ALLOWED_DOMAIN, BRANCHES, YEARS } from "@/lib/supabase";
 
 type Step = "details" | "otp";
 
@@ -197,10 +197,8 @@ export default function LoginPage() {
             </select>
             <select style={styles.input} value={year} onChange={e => setYear(e.target.value)}>
               <option value="">Select year</option>
-              {[1, 2, 3, 4].map(y => (
-                <option key={y} value={y}>
-                  {y === 1 ? "1st" : y === 2 ? "2nd" : y === 3 ? "3rd" : "4th"} Year
-                </option>
+              {YEARS.map(y => (
+                <option key={y.value} value={y.value}>{y.label}</option>
               ))}
             </select>
             <button

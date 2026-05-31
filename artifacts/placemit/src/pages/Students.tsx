@@ -1,4 +1,5 @@
 import { useListStudents } from "@workspace/api-client-react";
+import { yearToLabel } from "@/lib/supabase";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,7 @@ export default function Students() {
                   </div>
                   <div className="mt-4 space-y-1">
                     <h3 className="font-semibold text-base leading-tight truncate">{student.name}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{student.branch} &bull; Year {student.year}</p>
+                    <p className="text-sm text-muted-foreground truncate">{student.branch} &bull; {yearToLabel(student.year)}</p>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">

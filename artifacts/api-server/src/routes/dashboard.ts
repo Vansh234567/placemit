@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { desc, count, sql, isNotNull } from "drizzle-orm";
+import { desc, count, sql, isNotNull, eq, and } from "drizzle-orm";
 import { db, studentsTable, companiesTable, jobsTable, applicationsTable, postsTable, experiencesTable } from "@workspace/db";
 import {
   GetDashboardStatsResponse,
@@ -20,12 +20,27 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
   const totalPlaced = totalPlacedResult?.count ?? 0;
   const placementRate = totalStudents > 0 ? Math.round((totalPlaced / totalStudents) * 100) : 0;
 
+  // Compute average package from actual placed students' packageOffered values
+  const placedStudents = await db
+    .select({ packageOffered: studentsTable.packageOffered })
+    .from(studentsTable)
+    .where(and(isNotNull(studentsTable.placedAt), isNotNull(studentsTable.packageOffered)));
+
+  const packageNums = placedStudents
+    .map(s => parseFloat((s.packageOffered ?? "").replace(/[^0-9.]/g, "")))
+    .filter(n => !isNaN(n) && n > 0);
+
+  const avgPackage =
+    packageNums.length > 0
+      ? `${(packageNums.reduce((a, b) => a + b, 0) / packageNums.length).toFixed(1)} LPA`
+      : "N/A";
+
   const stats = {
     totalStudents,
     totalPlaced,
     totalCompanies: totalCompaniesResult?.count ?? 0,
     totalJobs: totalJobsResult?.count ?? 0,
-    avgPackage: "18.5 LPA",
+    avgPackage,
     placementRate,
     activeApplications: activeAppsResult?.count ?? 0,
   };
@@ -78,15 +93,34 @@ router.get("/dashboard/activity", async (req, res): Promise<void> => {
 });
 
 router.get("/dashboard/top-companies", async (req, res): Promise<void> => {
-  const companies = await db.select().from(companiesTable).orderBy(desc(companiesTable.placementsCount)).limit(10);
-  const result = companies.map((c) => ({
-    companyId: c.id,
-    companyName: c.name,
-    logoUrl: c.logoUrl ?? null,
-    placementsCount: c.placementsCount,
-    avgPackage: c.avgPackage ?? null,
-  }));
-  res.json(GetTopCompaniesResponse.parse(result));
+  // Compute placements count dynamically from experiences (selected outcome)
+  // instead of relying on the static denormalized companies.placements_count column
+  const rows = await db
+    .select({
+      companyId: companiesTable.id,
+      companyName: companiesTable.name,
+      logoUrl: companiesTable.logoUrl,
+      avgPackage: companiesTable.avgPackage,
+      placementsCount: sql<number>`cast(count(${experiencesTable.id}) as integer)`,
+    })
+    .from(companiesTable)
+    .leftJoin(
+      experiencesTable,
+      and(
+        eq(experiencesTable.companyId, companiesTable.id),
+        eq(experiencesTable.outcome, "selected"),
+      ),
+    )
+    .groupBy(
+      companiesTable.id,
+      companiesTable.name,
+      companiesTable.logoUrl,
+      companiesTable.avgPackage,
+    )
+    .orderBy(desc(sql`count(${experiencesTable.id})`))
+    .limit(10);
+
+  res.json(GetTopCompaniesResponse.parse(rows));
 });
 
 export default router;

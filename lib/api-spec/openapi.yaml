@@ -675,12 +675,14 @@ components:
 
     JobInput:
       type: object
-      required: [title, companyId, type, location]
+      required: [title, companyId, companyName, type, location]
       properties:
         title:
           type: string
         companyId:
           type: integer
+        companyName:
+          type: string
         type:
           type: string
           enum: [full-time, internship, part-time]

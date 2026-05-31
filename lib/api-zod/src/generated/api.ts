@@ -46,6 +46,7 @@ export const ListJobsResponse = zod.array(ListJobsResponseItem)
 export const CreateJobBody = zod.object({
   "title": zod.string(),
   "companyId": zod.number(),
+  "companyName": zod.string(),
   "type": zod.enum(['full-time', 'internship', 'part-time']),
   "location": zod.string(),
   "stipend": zod.string().optional(),

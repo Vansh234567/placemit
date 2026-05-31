@@ -48,6 +48,7 @@ export const JobInputType = {
 export interface JobInput {
   title: string;
   companyId: number;
+  companyName: string;
   type: JobInputType;
   location: string;
   stipend?: string;

@@ -13,4 +13,8 @@ export type ListExperiencesParams = {
  */
 companyId?: number | null;
 outcome?: ListExperiencesOutcome;
+/**
+ * Case-insensitive search across company name and role
+ */
+search?: string;
 };

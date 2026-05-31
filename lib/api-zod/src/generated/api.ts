@@ -388,7 +388,8 @@ export const CreateCommentBody = zod.object({
  */
 export const ListExperiencesQueryParams = zod.object({
   "companyId": zod.coerce.number().nullish(),
-  "outcome": zod.enum(['selected', 'rejected', 'on-hold']).optional()
+  "outcome": zod.enum(['selected', 'rejected', 'on-hold']).optional(),
+  "search": zod.coerce.string().optional().describe('Case-insensitive search across company name and role')
 })
 
 export const ListExperiencesResponseItem = zod.object({
@@ -401,7 +402,11 @@ export const ListExperiencesResponseItem = zod.object({
   "outcome": zod.enum(['selected', 'rejected', 'on-hold']),
   "rounds": zod.number(),
   "description": zod.string().nullish(),
+  "interviewProcess": zod.string().nullish(),
+  "oaQuestions": zod.string().nullish(),
+  "resourcesUsed": zod.string().nullish(),
   "tips": zod.string().nullish(),
+  "cgpa": zod.number().nullish(),
   "packageOffered": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -418,9 +423,13 @@ export const CreateExperienceBody = zod.object({
   "companyName": zod.string(),
   "role": zod.string(),
   "outcome": zod.enum(['selected', 'rejected', 'on-hold']),
-  "rounds": zod.number(),
+  "rounds": zod.number().optional(),
   "description": zod.string().optional(),
+  "interviewProcess": zod.string().optional(),
+  "oaQuestions": zod.string().optional(),
+  "resourcesUsed": zod.string().optional(),
   "tips": zod.string().optional(),
+  "cgpa": zod.number().optional(),
   "packageOffered": zod.string().optional()
 })
 
@@ -442,7 +451,11 @@ export const GetExperienceResponse = zod.object({
   "outcome": zod.enum(['selected', 'rejected', 'on-hold']),
   "rounds": zod.number(),
   "description": zod.string().nullish(),
+  "interviewProcess": zod.string().nullish(),
+  "oaQuestions": zod.string().nullish(),
+  "resourcesUsed": zod.string().nullish(),
   "tips": zod.string().nullish(),
+  "cgpa": zod.number().nullish(),
   "packageOffered": zod.string().nullish(),
   "createdAt": zod.string()
 })

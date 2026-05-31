@@ -14,8 +14,12 @@ export interface ExperienceInput {
   companyName: string;
   role: string;
   outcome: ExperienceInputOutcome;
-  rounds: number;
+  rounds?: number;
   description?: string;
+  interviewProcess?: string;
+  oaQuestions?: string;
+  resourcesUsed?: string;
   tips?: string;
+  cgpa?: number;
   packageOffered?: string;
 }

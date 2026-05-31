@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -11,8 +11,14 @@ export const experiencesTable = pgTable("experiences", {
   role: text("role").notNull(),
   outcome: text("outcome").notNull(),
   rounds: integer("rounds").notNull().default(1),
+  // Legacy field — kept for backward compat with seeded data
   description: text("description"),
+  // New structured fields
+  interviewProcess: text("interview_process"),
+  oaQuestions: text("oa_questions"),
+  resourcesUsed: text("resources_used"),
   tips: text("tips"),
+  cgpa: real("cgpa"),
   packageOffered: text("package_offered"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

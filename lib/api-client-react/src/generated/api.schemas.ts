@@ -223,7 +223,15 @@ export interface Experience {
   /** @nullable */
   description?: string | null;
   /** @nullable */
+  interviewProcess?: string | null;
+  /** @nullable */
+  oaQuestions?: string | null;
+  /** @nullable */
+  resourcesUsed?: string | null;
+  /** @nullable */
   tips?: string | null;
+  /** @nullable */
+  cgpa?: number | null;
   /** @nullable */
   packageOffered?: string | null;
   createdAt: string;
@@ -245,9 +253,13 @@ export interface ExperienceInput {
   companyName: string;
   role: string;
   outcome: ExperienceInputOutcome;
-  rounds: number;
+  rounds?: number;
   description?: string;
+  interviewProcess?: string;
+  oaQuestions?: string;
+  resourcesUsed?: string;
   tips?: string;
+  cgpa?: number;
   packageOffered?: string;
 }
 
@@ -416,6 +428,10 @@ export type ListExperiencesParams = {
  */
 companyId?: number | null;
 outcome?: ListExperiencesOutcome;
+/**
+ * Case-insensitive search across company name and role
+ */
+search?: string;
 };
 
 export type ListExperiencesOutcome = typeof ListExperiencesOutcome[keyof typeof ListExperiencesOutcome];

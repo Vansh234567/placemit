@@ -418,6 +418,11 @@ paths:
           schema:
             type: string
             enum: [selected, rejected, on-hold]
+        - name: search
+          in: query
+          description: Case-insensitive search across company name and role
+          schema:
+            type: string
       responses:
         "200":
           description: List of experiences
@@ -924,8 +929,16 @@ components:
           type: integer
         description:
           type: ["string", "null"]
+        interviewProcess:
+          type: ["string", "null"]
+        oaQuestions:
+          type: ["string", "null"]
+        resourcesUsed:
+          type: ["string", "null"]
         tips:
           type: ["string", "null"]
+        cgpa:
+          type: ["number", "null"]
         packageOffered:
           type: ["string", "null"]
         createdAt:
@@ -933,7 +946,7 @@ components:
 
     ExperienceInput:
       type: object
-      required: [studentName, companyName, role, outcome, rounds]
+      required: [studentName, companyName, role, outcome]
       properties:
         studentName:
           type: string
@@ -952,8 +965,16 @@ components:
           type: integer
         description:
           type: string
+        interviewProcess:
+          type: string
+        oaQuestions:
+          type: string
+        resourcesUsed:
+          type: string
         tips:
           type: string
+        cgpa:
+          type: number
         packageOffered:
           type: string
 

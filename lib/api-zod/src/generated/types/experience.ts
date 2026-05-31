@@ -21,7 +21,15 @@ export interface Experience {
   /** @nullable */
   description?: string | null;
   /** @nullable */
+  interviewProcess?: string | null;
+  /** @nullable */
+  oaQuestions?: string | null;
+  /** @nullable */
+  resourcesUsed?: string | null;
+  /** @nullable */
   tips?: string | null;
+  /** @nullable */
+  cgpa?: number | null;
   /** @nullable */
   packageOffered?: string | null;
   createdAt: string;

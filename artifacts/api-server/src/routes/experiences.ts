@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or, ilike, and } from "drizzle-orm";
 import { db, experiencesTable } from "@workspace/db";
 import { serializeDates, serializeRows } from "../lib/serialize";
 import {
@@ -18,10 +18,30 @@ router.get("/experiences", async (req, res): Promise<void> => {
     res.status(400).json({ error: queryParams.error.message });
     return;
   }
-  let query = db.select().from(experiencesTable).$dynamic();
-  if (queryParams.data.outcome) {
-    query = query.where(eq(experiencesTable.outcome, queryParams.data.outcome));
+
+  const { outcome, search } = queryParams.data;
+
+  const conditions = [];
+  if (outcome) {
+    conditions.push(eq(experiencesTable.outcome, outcome));
   }
+  if (search && search.trim()) {
+    const term = `%${search.trim()}%`;
+    conditions.push(
+      or(
+        ilike(experiencesTable.companyName, term),
+        ilike(experiencesTable.role, term),
+      ),
+    );
+  }
+
+  let query = db.select().from(experiencesTable).$dynamic();
+  if (conditions.length === 1) {
+    query = query.where(conditions[0]);
+  } else if (conditions.length > 1) {
+    query = query.where(and(...conditions));
+  }
+
   const experiences = await query.orderBy(desc(experiencesTable.createdAt));
   res.json(ListExperiencesResponse.parse(serializeRows(experiences)));
 });

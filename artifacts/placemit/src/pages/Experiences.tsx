@@ -29,8 +29,6 @@ import {
   GraduationCap,
   BookOpen,
   Lightbulb,
-  CheckCircle2,
-  XCircle,
   Star,
   Users,
   ShieldCheck,
@@ -52,7 +50,6 @@ type FormState = {
   interviewProcess: string;
   resourcesUsed: string;
   tips: string;
-  outcome: "selected" | "rejected";
   rounds: string;
 };
 
@@ -67,7 +64,6 @@ const EMPTY_FORM: FormState = {
   interviewProcess: "",
   resourcesUsed: "",
   tips: "",
-  outcome: "selected",
   rounds: "3",
 };
 
@@ -134,7 +130,6 @@ export default function Experiences() {
           studentName: profile.name,
           companyName: form.companyName.trim(),
           role: form.role.trim(),
-          outcome: form.outcome,
           rounds: parseInt(form.rounds) || 1,
           packageOffered: form.packageOffered.trim() || undefined,
           cgpa: cgpaNum,
@@ -254,40 +249,14 @@ export default function Experiences() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="package">Package</Label>
-                  <Input
-                    id="package"
-                    placeholder="e.g. 45 LPA"
-                    value={form.packageOffered}
-                    onChange={e => setField("packageOffered", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Outcome <span className="text-destructive">*</span></Label>
-                  <div className="flex gap-2">
-                    {(["selected", "rejected"] as const).map(o => (
-                      <button
-                        key={o}
-                        type="button"
-                        onClick={() => setField("outcome", o)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-md border text-sm font-medium transition-colors flex-1 justify-center ${
-                          form.outcome === o
-                            ? o === "selected"
-                              ? "bg-green-500/10 border-green-500 text-green-600 dark:text-green-400"
-                              : "bg-destructive/10 border-destructive text-destructive"
-                            : "border-border text-muted-foreground hover:border-foreground/50"
-                        }`}
-                      >
-                        {o === "selected"
-                          ? <CheckCircle2 className="w-4 h-4" />
-                          : <XCircle className="w-4 h-4" />}
-                        {o.charAt(0).toUpperCase() + o.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="package">Package</Label>
+                <Input
+                  id="package"
+                  placeholder="e.g. 45 LPA"
+                  value={form.packageOffered}
+                  onChange={e => setField("packageOffered", e.target.value)}
+                />
               </div>
             </div>
 
@@ -430,7 +399,6 @@ type Exp = {
   studentAvatarUrl?: string | null;
   companyName: string;
   role: string;
-  outcome: string;
   rounds: number;
   packageOffered?: string | null;
   cgpa?: number | null;
@@ -446,7 +414,6 @@ type Exp = {
 
 function ExperienceCard({ exp }: { exp: Exp }) {
   const [expanded, setExpanded] = useState(false);
-  const isSelected = exp.outcome === "selected";
 
   const processText = exp.interviewProcess || exp.description;
   const hasBranches = exp.eligibleBranches && exp.eligibleBranches.length > 0;
@@ -483,10 +450,6 @@ function ExperienceCard({ exp }: { exp: Exp }) {
 
       {/* Meta row */}
       <div className="px-5 py-3 flex flex-wrap items-center gap-2 border-b bg-muted/20">
-        <Badge variant={isSelected ? "default" : "destructive"} className="gap-1 text-xs">
-          {isSelected ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-          {isSelected ? "Selected" : "Rejected"}
-        </Badge>
         <Badge variant="outline" className="text-xs">{exp.rounds} Rounds</Badge>
         {exp.cgpa != null && (
           <Badge variant="outline" className="text-xs gap-1">

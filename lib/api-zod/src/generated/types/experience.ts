@@ -5,7 +5,6 @@
  * PlaceMIT - College Placement Community Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { ExperienceOutcome } from './experienceOutcome';
 
 export interface Experience {
   id: number;
@@ -16,7 +15,6 @@ export interface Experience {
   companyId?: number | null;
   companyName: string;
   role: string;
-  outcome: ExperienceOutcome;
   rounds: number;
   /** @nullable */
   description?: string | null;

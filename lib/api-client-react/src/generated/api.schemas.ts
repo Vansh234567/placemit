@@ -201,15 +201,6 @@ export interface CommentInput {
   authorAvatarUrl?: string;
 }
 
-export type ExperienceOutcome = typeof ExperienceOutcome[keyof typeof ExperienceOutcome];
-
-
-export const ExperienceOutcome = {
-  selected: 'selected',
-  rejected: 'rejected',
-  'on-hold': 'on-hold',
-} as const;
-
 export interface Experience {
   id: number;
   studentName: string;
@@ -219,7 +210,6 @@ export interface Experience {
   companyId?: number | null;
   companyName: string;
   role: string;
-  outcome: ExperienceOutcome;
   rounds: number;
   /** @nullable */
   description?: string | null;
@@ -242,22 +232,12 @@ export interface Experience {
   createdAt: string;
 }
 
-export type ExperienceInputOutcome = typeof ExperienceInputOutcome[keyof typeof ExperienceInputOutcome];
-
-
-export const ExperienceInputOutcome = {
-  selected: 'selected',
-  rejected: 'rejected',
-  'on-hold': 'on-hold',
-} as const;
-
 export interface ExperienceInput {
   studentName: string;
   studentAvatarUrl?: string;
   companyId?: number;
   companyName: string;
   role: string;
-  outcome: ExperienceInputOutcome;
   rounds?: number;
   description?: string;
   interviewProcess?: string;
@@ -434,19 +414,9 @@ export type ListExperiencesParams = {
  * @nullable
  */
 companyId?: number | null;
-outcome?: ListExperiencesOutcome;
 /**
  * Case-insensitive search across company name and role
  */
 search?: string;
 };
-
-export type ListExperiencesOutcome = typeof ListExperiencesOutcome[keyof typeof ListExperiencesOutcome];
-
-
-export const ListExperiencesOutcome = {
-  selected: 'selected',
-  rejected: 'rejected',
-  'on-hold': 'on-hold',
-} as const;
 

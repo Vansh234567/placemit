@@ -389,7 +389,6 @@ export const CreateCommentBody = zod.object({
  */
 export const ListExperiencesQueryParams = zod.object({
   "companyId": zod.coerce.number().nullish(),
-  "outcome": zod.enum(['selected', 'rejected', 'on-hold']).optional(),
   "search": zod.coerce.string().optional().describe('Case-insensitive search across company name and role')
 })
 
@@ -400,7 +399,6 @@ export const ListExperiencesResponseItem = zod.object({
   "companyId": zod.number().nullish(),
   "companyName": zod.string(),
   "role": zod.string(),
-  "outcome": zod.enum(['selected', 'rejected', 'on-hold']),
   "rounds": zod.number(),
   "description": zod.string().nullish(),
   "interviewProcess": zod.string().nullish(),
@@ -425,7 +423,6 @@ export const CreateExperienceBody = zod.object({
   "companyId": zod.number().optional(),
   "companyName": zod.string(),
   "role": zod.string(),
-  "outcome": zod.enum(['selected', 'rejected', 'on-hold']),
   "rounds": zod.number().optional(),
   "description": zod.string().optional(),
   "interviewProcess": zod.string().optional(),
@@ -453,7 +450,6 @@ export const GetExperienceResponse = zod.object({
   "companyId": zod.number().nullish(),
   "companyName": zod.string(),
   "role": zod.string(),
-  "outcome": zod.enum(['selected', 'rejected', 'on-hold']),
   "rounds": zod.number(),
   "description": zod.string().nullish(),
   "interviewProcess": zod.string().nullish(),

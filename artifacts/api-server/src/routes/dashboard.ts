@@ -80,7 +80,7 @@ router.get("/dashboard/activity", async (req, res): Promise<void> => {
     activities.push({
       id: idCounter++,
       type: "experience",
-      message: `${exp.studentName} shared their experience at ${exp.companyName} — ${exp.outcome}`,
+      message: `${exp.studentName} shared their experience at ${exp.companyName}`,
       actorName: exp.studentName,
       actorAvatarUrl: exp.studentAvatarUrl ?? null,
       createdAt: exp.createdAt.toISOString(),
@@ -93,7 +93,7 @@ router.get("/dashboard/activity", async (req, res): Promise<void> => {
 });
 
 router.get("/dashboard/top-companies", async (req, res): Promise<void> => {
-  // Compute placements count dynamically from experiences (selected outcome)
+  // Compute placements count dynamically from experiences
   // instead of relying on the static denormalized companies.placements_count column
   const rows = await db
     .select({
@@ -106,10 +106,7 @@ router.get("/dashboard/top-companies", async (req, res): Promise<void> => {
     .from(companiesTable)
     .leftJoin(
       experiencesTable,
-      and(
-        eq(experiencesTable.companyId, companiesTable.id),
-        eq(experiencesTable.outcome, "selected"),
-      ),
+      eq(experiencesTable.companyId, companiesTable.id),
     )
     .groupBy(
       companiesTable.id,

@@ -5,14 +5,12 @@
  * PlaceMIT - College Placement Community Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { ListExperiencesOutcome } from './listExperiencesOutcome';
 
 export type ListExperiencesParams = {
 /**
  * @nullable
  */
 companyId?: number | null;
-outcome?: ListExperiencesOutcome;
 /**
  * Case-insensitive search across company name and role
  */

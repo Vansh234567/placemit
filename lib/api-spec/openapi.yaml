@@ -413,11 +413,6 @@ paths:
           in: query
           schema:
             type: ["integer", "null"]
-        - name: outcome
-          in: query
-          schema:
-            type: string
-            enum: [selected, rejected, on-hold]
         - name: search
           in: query
           description: Case-insensitive search across company name and role
@@ -910,7 +905,7 @@ components:
     # Experience schemas
     Experience:
       type: object
-      required: [id, studentName, companyName, role, outcome, rounds, createdAt]
+      required: [id, studentName, companyName, role, rounds, createdAt]
       properties:
         id:
           type: integer
@@ -924,9 +919,6 @@ components:
           type: string
         role:
           type: string
-        outcome:
-          type: string
-          enum: [selected, rejected, on-hold]
         rounds:
           type: integer
         description:
@@ -954,7 +946,7 @@ components:
 
     ExperienceInput:
       type: object
-      required: [studentName, companyName, role, outcome]
+      required: [studentName, companyName, role]
       properties:
         studentName:
           type: string
@@ -966,9 +958,6 @@ components:
           type: string
         role:
           type: string
-        outcome:
-          type: string
-          enum: [selected, rejected, on-hold]
         rounds:
           type: integer
         description:

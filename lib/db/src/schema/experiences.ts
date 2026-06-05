@@ -9,7 +9,6 @@ export const experiencesTable = pgTable("experiences", {
   companyId: integer("company_id"),
   companyName: text("company_name").notNull(),
   role: text("role").notNull(),
-  outcome: text("outcome").notNull(),
   rounds: integer("rounds").notNull().default(1),
   // Legacy field — kept for backward compat with seeded data
   description: text("description"),

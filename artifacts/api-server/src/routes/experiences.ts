@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, or, ilike, and } from "drizzle-orm";
+import { eq, desc, or, ilike, and } from "drizzle-orm"; // eq kept for getExperience/:id
 import { db, experiencesTable } from "@workspace/db";
 import { serializeDates, serializeRows } from "../lib/serialize";
 import {
@@ -19,12 +19,9 @@ router.get("/experiences", async (req, res): Promise<void> => {
     return;
   }
 
-  const { outcome, search } = queryParams.data;
+  const { search } = queryParams.data;
 
   const conditions = [];
-  if (outcome) {
-    conditions.push(eq(experiencesTable.outcome, outcome));
-  }
   if (search && search.trim()) {
     const term = `%${search.trim()}%`;
     conditions.push(

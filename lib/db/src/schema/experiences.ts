@@ -13,11 +13,15 @@ export const experiencesTable = pgTable("experiences", {
   rounds: integer("rounds").notNull().default(1),
   // Legacy field — kept for backward compat with seeded data
   description: text("description"),
-  // New structured fields
+  // Structured content
   interviewProcess: text("interview_process"),
   oaQuestions: text("oa_questions"),
   resourcesUsed: text("resources_used"),
   tips: text("tips"),
+  // Eligibility
+  cgpaCriteria: text("cgpa_criteria"),
+  eligibleBranches: text("eligible_branches").array(),
+  // Stats
   cgpa: real("cgpa"),
   packageOffered: text("package_offered"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -31,9 +32,12 @@ import {
   CheckCircle2,
   XCircle,
   Star,
+  Users,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { BRANCHES } from "@/lib/supabase";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,6 +46,8 @@ type FormState = {
   role: string;
   packageOffered: string;
   cgpa: string;
+  cgpaCriteria: string;
+  eligibleBranches: string[];
   oaQuestions: string;
   interviewProcess: string;
   resourcesUsed: string;
@@ -55,6 +61,8 @@ const EMPTY_FORM: FormState = {
   role: "",
   packageOffered: "",
   cgpa: "",
+  cgpaCriteria: "",
+  eligibleBranches: [],
   oaQuestions: "",
   interviewProcess: "",
   resourcesUsed: "",
@@ -77,7 +85,6 @@ export default function Experiences() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
 
-  // Seniors = year 4
   const isSenior = Number(profile?.year) >= 4;
 
   const { data: experiences, isLoading } = useListExperiences(
@@ -94,6 +101,15 @@ export default function Experiences() {
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }));
+  }
+
+  function toggleBranch(branch: string) {
+    setForm(prev => ({
+      ...prev,
+      eligibleBranches: prev.eligibleBranches.includes(branch)
+        ? prev.eligibleBranches.filter(b => b !== branch)
+        : [...prev.eligibleBranches, branch],
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -122,6 +138,8 @@ export default function Experiences() {
           rounds: parseInt(form.rounds) || 1,
           packageOffered: form.packageOffered.trim() || undefined,
           cgpa: cgpaNum,
+          cgpaCriteria: form.cgpaCriteria.trim() || undefined,
+          eligibleBranches: form.eligibleBranches.length > 0 ? form.eligibleBranches : undefined,
           oaQuestions: form.oaQuestions.trim() || undefined,
           interviewProcess: form.interviewProcess.trim() || undefined,
           resourcesUsed: form.resourcesUsed.trim() || undefined,
@@ -148,7 +166,7 @@ export default function Experiences() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Interview Experiences</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Real accounts from MIT Manipal students — OA rounds, interview process, tips.
+            Real accounts from MIT Manipal students — OT rounds, interview process, tips.
           </p>
         </div>
 
@@ -197,7 +215,7 @@ export default function Experiences() {
           <DialogHeader>
             <DialogTitle>Share Your Interview Experience</DialogTitle>
             <DialogDescription>
-              Help your juniors prepare. All fields except company, role and interview process are optional.
+              Help your juniors prepare. Company, role and interview process are required.
             </DialogDescription>
           </DialogHeader>
 
@@ -218,7 +236,7 @@ export default function Experiences() {
                 <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
                 <Input
                   id="role"
-                  placeholder="e.g. Software Engineer L4"
+                  placeholder="e.g. Software Engineer"
                   value={form.role}
                   onChange={e => setField("role", e.target.value)}
                   required
@@ -226,28 +244,15 @@ export default function Experiences() {
               </div>
             </div>
 
-            {/* Row: Package + CGPA + Rounds */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Row: Package + Rounds */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="package">Package (LPA)</Label>
+                <Label htmlFor="package">Package</Label>
                 <Input
                   id="package"
                   placeholder="e.g. 45 LPA"
                   value={form.packageOffered}
                   onChange={e => setField("packageOffered", e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cgpa">Your CGPA</Label>
-                <Input
-                  id="cgpa"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="10"
-                  placeholder="e.g. 9.2"
-                  value={form.cgpa}
-                  onChange={e => setField("cgpa", e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
@@ -261,6 +266,56 @@ export default function Experiences() {
                   onChange={e => setField("rounds", e.target.value)}
                 />
               </div>
+            </div>
+
+            {/* CGPA Criteria */}
+            <div className="space-y-1.5">
+              <Label htmlFor="cgpaCriteria">CGPA Criteria</Label>
+              <Input
+                id="cgpaCriteria"
+                placeholder="e.g. 7.0 and above, No backlog, Open to all"
+                value={form.cgpaCriteria}
+                onChange={e => setField("cgpaCriteria", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">The minimum CGPA cutoff announced by the company</p>
+            </div>
+
+            {/* Eligible Branches */}
+            <div className="space-y-2">
+              <Label>
+                Eligible Branches
+                {form.eligibleBranches.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    {form.eligibleBranches.length} selected
+                  </span>
+                )}
+              </Label>
+              <div className="border rounded-md p-3 max-h-48 overflow-y-auto grid grid-cols-1 gap-2">
+                {BRANCHES.map(branch => (
+                  <div key={branch} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`branch-${branch}`}
+                      checked={form.eligibleBranches.includes(branch)}
+                      onCheckedChange={() => toggleBranch(branch)}
+                    />
+                    <label
+                      htmlFor={`branch-${branch}`}
+                      className="text-sm cursor-pointer leading-tight"
+                    >
+                      {branch}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              {form.eligibleBranches.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setField("eligibleBranches", [])}
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                >
+                  Clear selection
+                </button>
+              )}
             </div>
 
             {/* Outcome */}
@@ -289,13 +344,13 @@ export default function Experiences() {
               </div>
             </div>
 
-            {/* OA Questions */}
+            {/* OT Questions */}
             <div className="space-y-1.5">
-              <Label htmlFor="oa">Online Assessment / OA Questions</Label>
+              <Label htmlFor="ot">OT Questions</Label>
               <Textarea
-                id="oa"
+                id="ot"
                 rows={3}
-                placeholder="Describe the OA format, question types, difficulty, topics covered…"
+                placeholder="Describe the online test — format, question types, difficulty, topics covered…"
                 value={form.oaQuestions}
                 onChange={e => setField("oaQuestions", e.target.value)}
               />
@@ -367,6 +422,8 @@ type Exp = {
   rounds: number;
   packageOffered?: string | null;
   cgpa?: number | null;
+  cgpaCriteria?: string | null;
+  eligibleBranches?: string[] | null;
   oaQuestions?: string | null;
   interviewProcess?: string | null;
   description?: string | null;
@@ -379,8 +436,9 @@ function ExperienceCard({ exp }: { exp: Exp }) {
   const [expanded, setExpanded] = useState(false);
   const isSelected = exp.outcome === "selected";
 
-  // Combine interviewProcess (new) with description (legacy) for display
   const processText = exp.interviewProcess || exp.description;
+  const hasBranches = exp.eligibleBranches && exp.eligibleBranches.length > 0;
+  const hasExtra = !!(exp.resourcesUsed || exp.tips);
 
   return (
     <Card className="overflow-hidden">
@@ -413,10 +471,7 @@ function ExperienceCard({ exp }: { exp: Exp }) {
 
       {/* Meta row */}
       <div className="px-5 py-3 flex flex-wrap items-center gap-2 border-b bg-muted/20">
-        <Badge
-          variant={isSelected ? "default" : "destructive"}
-          className="gap-1 text-xs"
-        >
+        <Badge variant={isSelected ? "default" : "destructive"} className="gap-1 text-xs">
           {isSelected ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
           {isSelected ? "Selected" : "Rejected"}
         </Badge>
@@ -424,7 +479,7 @@ function ExperienceCard({ exp }: { exp: Exp }) {
         {exp.cgpa != null && (
           <Badge variant="outline" className="text-xs gap-1">
             <Star className="w-3 h-3" />
-            CGPA {exp.cgpa}
+            My CGPA {exp.cgpa}
           </Badge>
         )}
         {exp.packageOffered && (
@@ -435,10 +490,40 @@ function ExperienceCard({ exp }: { exp: Exp }) {
         )}
       </div>
 
+      {/* CGPA Criteria — prominent banner */}
+      {exp.cgpaCriteria && (
+        <div className="px-5 py-2.5 flex items-center gap-2 border-b bg-amber-500/5 border-amber-500/20">
+          <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+          <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+            CGPA Criteria:
+          </span>
+          <span className="text-sm text-foreground/90">{exp.cgpaCriteria}</span>
+        </div>
+      )}
+
+      {/* Eligible Branches */}
+      {hasBranches && (
+        <div className="px-5 py-3 border-b bg-muted/10">
+          <div className="flex items-start gap-2">
+            <Users className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Eligible Branches
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {exp.eligibleBranches!.map(b => (
+                  <Badge key={b} variant="secondary" className="text-xs font-normal">{b}</Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Body */}
       <CardContent className="p-5 space-y-4">
         {exp.oaQuestions && (
-          <Section icon={<BookOpen className="w-4 h-4" />} title="OA / Online Assessment">
+          <Section icon={<BookOpen className="w-4 h-4" />} title="OT Questions">
             {exp.oaQuestions}
           </Section>
         )}
@@ -449,7 +534,7 @@ function ExperienceCard({ exp }: { exp: Exp }) {
           </Section>
         )}
 
-        {(exp.resourcesUsed || exp.tips) && !expanded && (
+        {hasExtra && !expanded && (
           <button
             onClick={() => setExpanded(true)}
             className="text-xs text-primary hover:underline"

@@ -939,6 +939,12 @@ components:
           type: ["string", "null"]
         tips:
           type: ["string", "null"]
+        cgpaCriteria:
+          type: ["string", "null"]
+        eligibleBranches:
+          type: ["array", "null"]
+          items:
+            type: string
         cgpa:
           type: ["number", "null"]
         packageOffered:
@@ -975,6 +981,12 @@ components:
           type: string
         tips:
           type: string
+        cgpaCriteria:
+          type: string
+        eligibleBranches:
+          type: array
+          items:
+            type: string
         cgpa:
           type: number
         packageOffered:

@@ -407,6 +407,8 @@ export const ListExperiencesResponseItem = zod.object({
   "oaQuestions": zod.string().nullish(),
   "resourcesUsed": zod.string().nullish(),
   "tips": zod.string().nullish(),
+  "cgpaCriteria": zod.string().nullish(),
+  "eligibleBranches": zod.array(zod.string()).nullish(),
   "cgpa": zod.number().nullish(),
   "packageOffered": zod.string().nullish(),
   "createdAt": zod.string()
@@ -430,6 +432,8 @@ export const CreateExperienceBody = zod.object({
   "oaQuestions": zod.string().optional(),
   "resourcesUsed": zod.string().optional(),
   "tips": zod.string().optional(),
+  "cgpaCriteria": zod.string().optional(),
+  "eligibleBranches": zod.array(zod.string()).optional(),
   "cgpa": zod.number().optional(),
   "packageOffered": zod.string().optional()
 })
@@ -456,6 +460,8 @@ export const GetExperienceResponse = zod.object({
   "oaQuestions": zod.string().nullish(),
   "resourcesUsed": zod.string().nullish(),
   "tips": zod.string().nullish(),
+  "cgpaCriteria": zod.string().nullish(),
+  "eligibleBranches": zod.array(zod.string()).nullish(),
   "cgpa": zod.number().nullish(),
   "packageOffered": zod.string().nullish(),
   "createdAt": zod.string()

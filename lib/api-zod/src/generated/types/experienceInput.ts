@@ -20,6 +20,8 @@ export interface ExperienceInput {
   oaQuestions?: string;
   resourcesUsed?: string;
   tips?: string;
+  cgpaCriteria?: string;
+  eligibleBranches?: string[];
   cgpa?: number;
   packageOffered?: string;
 }

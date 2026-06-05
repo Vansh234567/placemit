@@ -274,11 +274,15 @@ paths:
       tags: [posts]
       summary: List community posts
       parameters:
-        - name: category
+        - name: sort
           in: query
           schema:
             type: string
-            enum: [general, interview-prep, resume-help, offers, advice]
+            enum: [newest, top]
+        - name: search
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: List of posts
@@ -358,6 +362,30 @@ paths:
                 $ref: "#/components/schemas/Post"
 
   # Comments
+  /posts/{postId}/comments/{commentId}/upvote:
+    post:
+      operationId: upvoteComment
+      tags: [comments]
+      summary: Upvote a comment
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
   /posts/{postId}/comments:
     get:
       operationId: listComments
@@ -859,7 +887,7 @@ components:
 
     PostInput:
       type: object
-      required: [title, content, authorName, category]
+      required: [title, content, authorName]
       properties:
         title:
           type: string
@@ -869,14 +897,11 @@ components:
           type: string
         authorAvatarUrl:
           type: string
-        category:
-          type: string
-          enum: [general, interview-prep, resume-help, offers, advice]
 
     # Comment schemas
     Comment:
       type: object
-      required: [id, postId, content, authorName, createdAt]
+      required: [id, postId, content, authorName, upvotes, createdAt]
       properties:
         id:
           type: integer
@@ -888,6 +913,8 @@ components:
           type: string
         authorAvatarUrl:
           type: ["string", "null"]
+        upvotes:
+          type: integer
         createdAt:
           type: string
 

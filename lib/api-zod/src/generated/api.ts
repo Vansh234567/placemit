@@ -275,7 +275,8 @@ export const UpdateStudentResponse = zod.object({
  * @summary List community posts
  */
 export const ListPostsQueryParams = zod.object({
-  "category": zod.enum(['general', 'interview-prep', 'resume-help', 'offers', 'advice']).optional()
+  "sort": zod.enum(['newest', 'top']).optional(),
+  "search": zod.coerce.string().optional()
 })
 
 export const ListPostsResponseItem = zod.object({
@@ -299,8 +300,7 @@ export const CreatePostBody = zod.object({
   "title": zod.string(),
   "content": zod.string(),
   "authorName": zod.string(),
-  "authorAvatarUrl": zod.string().optional(),
-  "category": zod.enum(['general', 'interview-prep', 'resume-help', 'offers', 'advice'])
+  "authorAvatarUrl": zod.string().optional()
 })
 
 
@@ -353,6 +353,25 @@ export const UpvotePostResponse = zod.object({
 
 
 /**
+ * @summary Upvote a comment
+ */
+export const UpvoteCommentParams = zod.object({
+  "postId": zod.coerce.number(),
+  "commentId": zod.coerce.number()
+})
+
+export const UpvoteCommentResponse = zod.object({
+  "id": zod.number(),
+  "postId": zod.number(),
+  "content": zod.string(),
+  "authorName": zod.string(),
+  "authorAvatarUrl": zod.string().nullish(),
+  "upvotes": zod.number(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary List comments on a post
  */
 export const ListCommentsParams = zod.object({
@@ -365,6 +384,7 @@ export const ListCommentsResponseItem = zod.object({
   "content": zod.string(),
   "authorName": zod.string(),
   "authorAvatarUrl": zod.string().nullish(),
+  "upvotes": zod.number(),
   "createdAt": zod.string()
 })
 export const ListCommentsResponse = zod.array(ListCommentsResponseItem)

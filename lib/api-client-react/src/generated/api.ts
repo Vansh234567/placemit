@@ -1405,6 +1405,78 @@ export const useUpvotePost = <TError = ErrorType<unknown>,
       return useMutation(getUpvotePostMutationOptions(options));
     }
 
+export const getUpvoteCommentUrl = (postId: number,
+    commentId: number,) => {
+
+
+
+
+  return `/api/posts/${postId}/comments/${commentId}/upvote`
+}
+
+/**
+ * @summary Upvote a comment
+ */
+export const upvoteComment = async (postId: number,
+    commentId: number, options?: RequestInit): Promise<Comment> => {
+
+  return customFetch<Comment>(getUpvoteCommentUrl(postId,commentId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getUpvoteCommentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upvoteComment>>, TError,{postId: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upvoteComment>>, TError,{postId: number;commentId: number}, TContext> => {
+
+const mutationKey = ['upvoteComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upvoteComment>>, {postId: number;commentId: number}> = (props) => {
+          const {postId,commentId} = props ?? {};
+
+          return  upvoteComment(postId,commentId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpvoteCommentMutationResult = NonNullable<Awaited<ReturnType<typeof upvoteComment>>>
+
+    export type UpvoteCommentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Upvote a comment
+ */
+export const useUpvoteComment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upvoteComment>>, TError,{postId: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upvoteComment>>,
+        TError,
+        {postId: number;commentId: number},
+        TContext
+      > => {
+      return useMutation(getUpvoteCommentMutationOptions(options));
+    }
+
 export const getListCommentsUrl = (postId: number,) => {
 
 

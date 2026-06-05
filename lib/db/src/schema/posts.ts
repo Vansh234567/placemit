@@ -20,6 +20,7 @@ export const commentsTable = pgTable("comments", {
   content: text("content").notNull(),
   authorName: text("author_name").notNull(),
   authorAvatarUrl: text("author_avatar_url"),
+  upvotes: integer("upvotes").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

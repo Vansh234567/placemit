@@ -5,9 +5,11 @@
  * PlaceMIT - College Placement Community Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { ListPostsSort } from './listPostsSort';
 
-export type ListPostsParams = {
-sort?: ListPostsSort;
-search?: string;
-};
+export type ListPostsSort = typeof ListPostsSort[keyof typeof ListPostsSort];
+
+
+export const ListPostsSort = {
+  newest: 'newest',
+  top: 'top',
+} as const;

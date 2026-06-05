@@ -13,5 +13,6 @@ export interface Comment {
   authorName: string;
   /** @nullable */
   authorAvatarUrl?: string | null;
+  upvotes: number;
   createdAt: string;
 }

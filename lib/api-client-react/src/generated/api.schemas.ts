@@ -166,23 +166,11 @@ export interface Post {
   createdAt: string;
 }
 
-export type PostInputCategory = typeof PostInputCategory[keyof typeof PostInputCategory];
-
-
-export const PostInputCategory = {
-  general: 'general',
-  'interview-prep': 'interview-prep',
-  'resume-help': 'resume-help',
-  offers: 'offers',
-  advice: 'advice',
-} as const;
-
 export interface PostInput {
   title: string;
   content: string;
   authorName: string;
   authorAvatarUrl?: string;
-  category: PostInputCategory;
 }
 
 export interface Comment {
@@ -192,6 +180,7 @@ export interface Comment {
   authorName: string;
   /** @nullable */
   authorAvatarUrl?: string | null;
+  upvotes: number;
   createdAt: string;
 }
 
@@ -395,18 +384,16 @@ export const ListJobsType = {
 } as const;
 
 export type ListPostsParams = {
-category?: ListPostsCategory;
+sort?: ListPostsSort;
+search?: string;
 };
 
-export type ListPostsCategory = typeof ListPostsCategory[keyof typeof ListPostsCategory];
+export type ListPostsSort = typeof ListPostsSort[keyof typeof ListPostsSort];
 
 
-export const ListPostsCategory = {
-  general: 'general',
-  'interview-prep': 'interview-prep',
-  'resume-help': 'resume-help',
-  offers: 'offers',
-  advice: 'advice',
+export const ListPostsSort = {
+  newest: 'newest',
+  top: 'top',
 } as const;
 
 export type ListExperiencesParams = {

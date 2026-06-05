@@ -5,12 +5,10 @@
  * PlaceMIT - College Placement Community Platform API
  * OpenAPI spec version: 0.1.0
  */
-import type { PostInputCategory } from './postInputCategory';
 
 export interface PostInput {
   title: string;
   content: string;
   authorName: string;
   authorAvatarUrl?: string;
-  category: PostInputCategory;
 }

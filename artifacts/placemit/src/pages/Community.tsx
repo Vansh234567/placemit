@@ -17,6 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -33,6 +34,7 @@ const CATEGORIES = [
 ];
 
 export default function Community() {
+  const { profile } = useAuth();
   const [activeCategory, setActiveCategory] = useState<string | undefined>();
   const [open, setOpen] = useState(false);
   
@@ -58,7 +60,7 @@ export default function Community() {
     createPost.mutate({
       data: {
         ...values,
-        authorName: "Student User", // Mock
+        authorName: profile?.name ?? "Anonymous",
       }
     }, {
       onSuccess: () => {

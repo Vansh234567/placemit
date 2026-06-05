@@ -199,10 +199,18 @@ export default function Experiences() {
         {isLoading ? (
           [1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)
         ) : experiences?.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
-            {debouncedSearch
-              ? `No experiences found for "${debouncedSearch}"`
-              : "No interview experiences shared yet."}
+          <div className="text-center py-16 border-2 border-dashed rounded-lg space-y-2">
+            {debouncedSearch ? (
+              <>
+                <p className="text-base font-medium text-foreground">No experiences found for "{debouncedSearch}"</p>
+                <p className="text-sm text-muted-foreground">Try a different company or role name.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-base font-medium text-foreground">No experiences shared yet.</p>
+                <p className="text-sm text-muted-foreground">Be the first senior to share an experience.</p>
+              </>
+            )}
           </div>
         ) : (
           experiences?.map(exp => <ExperienceCard key={exp.id} exp={exp} />)

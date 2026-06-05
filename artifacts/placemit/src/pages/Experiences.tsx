@@ -227,44 +227,140 @@ export default function Experiences() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-5 mt-2">
-            {/* Row: Company + Role */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="company">Company <span className="text-destructive">*</span></Label>
-                <Input
-                  id="company"
-                  placeholder="e.g. Google"
-                  value={form.companyName}
-                  onChange={e => setField("companyName", e.target.value)}
-                  required
-                />
+          <form onSubmit={handleSubmit} className="space-y-6 mt-2">
+
+            {/* ── Basic info ───────────────────────────────────────── */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="company">Company <span className="text-destructive">*</span></Label>
+                  <Input
+                    id="company"
+                    placeholder="e.g. Google"
+                    value={form.companyName}
+                    onChange={e => setField("companyName", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
+                  <Input
+                    id="role"
+                    placeholder="e.g. Software Engineer"
+                    value={form.role}
+                    onChange={e => setField("role", e.target.value)}
+                    required
+                  />
+                </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="package">Package</Label>
+                  <Input
+                    id="package"
+                    placeholder="e.g. 45 LPA"
+                    value={form.packageOffered}
+                    onChange={e => setField("packageOffered", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Outcome <span className="text-destructive">*</span></Label>
+                  <div className="flex gap-2">
+                    {(["selected", "rejected"] as const).map(o => (
+                      <button
+                        key={o}
+                        type="button"
+                        onClick={() => setField("outcome", o)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-md border text-sm font-medium transition-colors flex-1 justify-center ${
+                          form.outcome === o
+                            ? o === "selected"
+                              ? "bg-green-500/10 border-green-500 text-green-600 dark:text-green-400"
+                              : "bg-destructive/10 border-destructive text-destructive"
+                            : "border-border text-muted-foreground hover:border-foreground/50"
+                        }`}
+                      >
+                        {o === "selected"
+                          ? <CheckCircle2 className="w-4 h-4" />
+                          : <XCircle className="w-4 h-4" />}
+                        {o.charAt(0).toUpperCase() + o.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 1. Eligibility ───────────────────────────────────── */}
+            <div className="space-y-3">
+              <FormSectionHeader number={1} title="Eligibility" />
+
               <div className="space-y-1.5">
-                <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
+                <Label htmlFor="cgpaCriteria">CGPA Criteria</Label>
                 <Input
-                  id="role"
-                  placeholder="e.g. Software Engineer"
-                  value={form.role}
-                  onChange={e => setField("role", e.target.value)}
-                  required
+                  id="cgpaCriteria"
+                  placeholder="e.g. 7.0 and above, No backlog, Open to all"
+                  value={form.cgpaCriteria}
+                  onChange={e => setField("cgpaCriteria", e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">The minimum CGPA cutoff announced by the company</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>
+                  Branches Allowed
+                  {form.eligibleBranches.length > 0 && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      {form.eligibleBranches.length} selected
+                    </span>
+                  )}
+                </Label>
+                <div className="border rounded-md p-3 max-h-44 overflow-y-auto grid grid-cols-1 gap-2">
+                  {BRANCHES.map(branch => (
+                    <div key={branch} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`branch-${branch}`}
+                        checked={form.eligibleBranches.includes(branch)}
+                        onCheckedChange={() => toggleBranch(branch)}
+                      />
+                      <label htmlFor={`branch-${branch}`} className="text-sm cursor-pointer leading-tight">
+                        {branch}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {form.eligibleBranches.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setField("eligibleBranches", [])}
+                    className="text-xs text-muted-foreground hover:text-foreground underline"
+                  >
+                    Clear selection
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* ── 2. OT ────────────────────────────────────────────── */}
+            <div className="space-y-3">
+              <FormSectionHeader number={2} title="OT" />
+              <div className="space-y-1.5">
+                <Label htmlFor="ot">Questions Asked</Label>
+                <Textarea
+                  id="ot"
+                  rows={3}
+                  placeholder="Describe the online test — format, question types, difficulty, topics covered…"
+                  value={form.oaQuestions}
+                  onChange={e => setField("oaQuestions", e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Row: Package + Rounds */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* ── 3. Interview Process ─────────────────────────────── */}
+            <div className="space-y-3">
+              <FormSectionHeader number={3} title="Interview Process" />
               <div className="space-y-1.5">
-                <Label htmlFor="package">Package</Label>
-                <Input
-                  id="package"
-                  placeholder="e.g. 45 LPA"
-                  value={form.packageOffered}
-                  onChange={e => setField("packageOffered", e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="rounds">No. of Rounds</Label>
+                <Label htmlFor="rounds">Number of Rounds</Label>
                 <Input
                   id="rounds"
                   type="number"
@@ -274,116 +370,25 @@ export default function Experiences() {
                   onChange={e => setField("rounds", e.target.value)}
                 />
               </div>
-            </div>
-
-            {/* CGPA Criteria */}
-            <div className="space-y-1.5">
-              <Label htmlFor="cgpaCriteria">CGPA Criteria</Label>
-              <Input
-                id="cgpaCriteria"
-                placeholder="e.g. 7.0 and above, No backlog, Open to all"
-                value={form.cgpaCriteria}
-                onChange={e => setField("cgpaCriteria", e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">The minimum CGPA cutoff announced by the company</p>
-            </div>
-
-            {/* Eligible Branches */}
-            <div className="space-y-2">
-              <Label>
-                Eligible Branches
-                {form.eligibleBranches.length > 0 && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    {form.eligibleBranches.length} selected
-                  </span>
-                )}
-              </Label>
-              <div className="border rounded-md p-3 max-h-48 overflow-y-auto grid grid-cols-1 gap-2">
-                {BRANCHES.map(branch => (
-                  <div key={branch} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`branch-${branch}`}
-                      checked={form.eligibleBranches.includes(branch)}
-                      onCheckedChange={() => toggleBranch(branch)}
-                    />
-                    <label
-                      htmlFor={`branch-${branch}`}
-                      className="text-sm cursor-pointer leading-tight"
-                    >
-                      {branch}
-                    </label>
-                  </div>
-                ))}
-              </div>
-              {form.eligibleBranches.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setField("eligibleBranches", [])}
-                  className="text-xs text-muted-foreground hover:text-foreground underline"
-                >
-                  Clear selection
-                </button>
-              )}
-            </div>
-
-            {/* Outcome */}
-            <div className="space-y-1.5">
-              <Label>Outcome <span className="text-destructive">*</span></Label>
-              <div className="flex gap-3">
-                {(["selected", "rejected"] as const).map(o => (
-                  <button
-                    key={o}
-                    type="button"
-                    onClick={() => setField("outcome", o)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-colors ${
-                      form.outcome === o
-                        ? o === "selected"
-                          ? "bg-green-500/10 border-green-500 text-green-600 dark:text-green-400"
-                          : "bg-destructive/10 border-destructive text-destructive"
-                        : "border-border text-muted-foreground hover:border-foreground/50"
-                    }`}
-                  >
-                    {o === "selected"
-                      ? <CheckCircle2 className="w-4 h-4" />
-                      : <XCircle className="w-4 h-4" />}
-                    {o.charAt(0).toUpperCase() + o.slice(1)}
-                  </button>
-                ))}
+              <div className="space-y-1.5">
+                <Label htmlFor="process">
+                  Round-wise Details <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="process"
+                  rows={5}
+                  placeholder="Walk through each round — what was asked, what they looked for, how long each round lasted…"
+                  value={form.interviewProcess}
+                  onChange={e => setField("interviewProcess", e.target.value)}
+                  required
+                />
               </div>
             </div>
 
-            {/* OT Questions */}
-            <div className="space-y-1.5">
-              <Label htmlFor="ot">OT Questions</Label>
+            {/* ── 4. Resources Used ────────────────────────────────── */}
+            <div className="space-y-3">
+              <FormSectionHeader number={4} title="Resources Used" />
               <Textarea
-                id="ot"
-                rows={3}
-                placeholder="Describe the online test — format, question types, difficulty, topics covered…"
-                value={form.oaQuestions}
-                onChange={e => setField("oaQuestions", e.target.value)}
-              />
-            </div>
-
-            {/* Interview Process */}
-            <div className="space-y-1.5">
-              <Label htmlFor="process">
-                Interview Process <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="process"
-                rows={5}
-                placeholder="Walk through each round — what was asked, what they looked for, how long each round lasted…"
-                value={form.interviewProcess}
-                onChange={e => setField("interviewProcess", e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Resources */}
-            <div className="space-y-1.5">
-              <Label htmlFor="resources">Resources Used</Label>
-              <Textarea
-                id="resources"
                 rows={2}
                 placeholder="Books, courses, YouTube channels, LeetCode lists, mock interview tools…"
                 value={form.resourcesUsed}
@@ -391,11 +396,10 @@ export default function Experiences() {
               />
             </div>
 
-            {/* Tips */}
-            <div className="space-y-1.5">
-              <Label htmlFor="tips">Tips for Juniors</Label>
+            {/* ── 5. Tips for Juniors ──────────────────────────────── */}
+            <div className="space-y-3">
+              <FormSectionHeader number={5} title="Tips for Juniors" />
               <Textarea
-                id="tips"
                 rows={3}
                 placeholder="What would you do differently? What gave you an edge? What tripped you up?"
                 value={form.tips}
@@ -570,6 +574,18 @@ function ExperienceCard({ exp }: { exp: Exp }) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function FormSectionHeader({ number, title }: { number: number; title: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
+        {number}
+      </span>
+      <span className="text-sm font-semibold text-foreground">{title}</span>
+      <div className="flex-1 h-px bg-border" />
+    </div>
   );
 }
 

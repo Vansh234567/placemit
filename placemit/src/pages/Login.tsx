@@ -186,14 +186,12 @@ export default function LoginPage() {
               Code sent to <strong style={{ color: "#7ca4ff" }}>{email}</strong>
             </p>
             <input
-              <select
-                style={{
-                  ...styles.input,
-                  backgroundColor: "#161a20",
-                  color: "#f0f2f5",
-                }}
-                ...
-              >
+              style={{
+                ...styles.input,
+                fontSize: 24,
+                letterSpacing: 10,
+                textAlign: "center",
+              }}
               type="text"
               inputMode="numeric"
               placeholder="000000"

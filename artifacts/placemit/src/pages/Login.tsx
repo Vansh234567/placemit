@@ -23,7 +23,7 @@ export default function LoginPage() {
   function startCooldown() {
     setCooldown(RESEND_COOLDOWN_SECONDS);
     cooldownRef.current = setInterval(() => {
-      setCooldown(prev => {
+      setCooldown((prev) => {
         if (prev <= 1) {
           clearInterval(cooldownRef.current!);
           cooldownRef.current = null;
@@ -57,12 +57,15 @@ export default function LoginPage() {
     console.log("[sendOTP] sending OTP to:", email.trim());
 
     // Store profile data in sessionStorage; saved to DB after OTP verify
-    sessionStorage.setItem("pending_profile", JSON.stringify({
-      name: name.trim(),
-      branch,
-      year,
-      roll_no: rollNo.trim(),
-    }));
+    sessionStorage.setItem(
+      "pending_profile",
+      JSON.stringify({
+        name: name.trim(),
+        branch,
+        year,
+        roll_no: rollNo.trim(),
+      }),
+    );
 
     const { error: err } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -112,9 +115,13 @@ export default function LoginPage() {
     }
 
     if (!data.session) {
-      console.error("[verifyOTP] no session returned after successful OTP verify");
+      console.error(
+        "[verifyOTP] no session returned after successful OTP verify",
+      );
       setLoading(false);
-      setError("Authentication failed — no session returned. Please try again.");
+      setError(
+        "Authentication failed — no session returned. Please try again.",
+      );
       return;
     }
 
@@ -122,22 +129,37 @@ export default function LoginPage() {
 
     // Profile upsert is required — failure blocks login
     if (data.user) {
-      const pending = JSON.parse(sessionStorage.getItem("pending_profile") || "{}");
-      console.log("[verifyOTP] upserting profile:", { id: data.user.id, ...pending });
-
-      const { error: upsertError } = await supabase.from("profiles").upsert({
+      const pending = JSON.parse(
+        sessionStorage.getItem("pending_profile") || "{}",
+      );
+      console.log("[verifyOTP] upserting profile:", {
         id: data.user.id,
-        name: pending.name,
-        email: data.user.email!,
-        branch: pending.branch,
-        year: pending.year,
-        roll_no: pending.roll_no || null,
-      }, { onConflict: "id", ignoreDuplicates: true });
+        ...pending,
+      });
+
+      const { error: upsertError } = await supabase.from("profiles").upsert(
+        {
+          id: data.user.id,
+          name: pending.name,
+          email: data.user.email!,
+          branch: pending.branch,
+          year: pending.year,
+          roll_no: pending.roll_no || null,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
 
       if (upsertError) {
-        console.error("[verifyOTP] profile upsert failed — signing out:", upsertError.code, upsertError.message, upsertError);
+        console.error(
+          "[verifyOTP] profile upsert failed — signing out:",
+          upsertError.code,
+          upsertError.message,
+          upsertError,
+        );
         await supabase.auth.signOut();
-        console.log("[verifyOTP] forced sign out due to profile upsert failure");
+        console.log(
+          "[verifyOTP] forced sign out due to profile upsert failure",
+        );
         setLoading(false);
         setError("Account setup failed. Please try signing in again.");
         return;
@@ -148,7 +170,9 @@ export default function LoginPage() {
     }
 
     setLoading(false);
-    console.log("[verifyOTP] auth complete — session active, AuthGate will redirect");
+    console.log(
+      "[verifyOTP] auth complete — session active, AuthGate will redirect",
+    );
     // AuthGate in App.tsx listens to onAuthStateChange and unmounts LoginPage automatically
   }
 
@@ -169,7 +193,8 @@ export default function LoginPage() {
         <p style={styles.subtitle}>
           The placement intelligence + mentorship hub for{" "}
           <strong style={{ color: "#f0f2f5" }}>MIT Manipal</strong>.
-          <br />Verify with your college email to join.
+          <br />
+          Verify with your college email to join.
         </p>
 
         {error && <div style={styles.error}>{error}</div>}
@@ -181,30 +206,72 @@ export default function LoginPage() {
               type="email"
               placeholder={`yourname@${ALLOWED_DOMAIN}`}
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <input
               style={styles.input}
               type="text"
               placeholder="Full name"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
             />
             <input
               style={styles.input}
               type="text"
               placeholder="Roll number (e.g. 220905001)"
               value={rollNo}
-              onChange={e => setRollNo(e.target.value)}
+              onChange={(e) => setRollNo(e.target.value)}
             />
-            <select style={styles.input} value={branch} onChange={e => setBranch(e.target.value)}>
-              <option value="">Select branch</option>
-              {BRANCHES.map(b => <option key={b}>{b}</option>)}
+            <select
+              style={{
+                ...styles.input,
+                backgroundColor: "#161a20",
+                color: "#f0f2f5",
+              }}
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+            >
+              <option
+                value=""
+                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+              >
+                Select branch
+              </option>
+
+              {BRANCHES.map((b) => (
+                <option
+                  key={b}
+                  value={b}
+                  style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+                >
+                  {b}
+                </option>
+              ))}
             </select>
-            <select style={styles.input} value={year} onChange={e => setYear(e.target.value)}>
-              <option value="">Select year</option>
-              {YEARS.map(y => (
-                <option key={y.value} value={y.value}>{y.label}</option>
+            <select
+              style={{
+                ...styles.input,
+                backgroundColor: "#161a20",
+                color: "#f0f2f5",
+              }}
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+            >
+              <option
+                value=""
+                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+              >
+                Select batch
+              </option>
+
+              {YEARS.map((y) => (
+                <option
+                  key={y.value}
+                  value={y.value}
+                  style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+                >
+                  {y.label}
+                </option>
               ))}
             </select>
             <button
@@ -219,34 +286,40 @@ export default function LoginPage() {
               {loading
                 ? "Sending code..."
                 : cooldown > 0
-                ? `Resend in ${cooldown}s`
-                : "Send Verification Code →"}
+                  ? `Resend in ${cooldown}s`
+                  : "Send Verification Code →"}
             </button>
             <p style={styles.hint}>
               A 6-digit code will be sent to your Manipal email inbox.
-              <br />Fake or nonexistent emails won't receive it.
+              <br />
+              Fake or nonexistent emails won't receive it.
             </p>
           </>
         ) : (
           <>
-            <p style={{ color: "#8a8f9a", fontSize: 14, marginBottom: 16, textAlign: "center" }}>
+            <p
+              style={{
+                color: "#8a8f9a",
+                fontSize: 14,
+                marginBottom: 16,
+                textAlign: "center",
+              }}
+            >
               Code sent to <strong style={{ color: "#7ca4ff" }}>{email}</strong>
             </p>
             <input
-              <select
-                style={{
-                  ...styles.input,
-                  backgroundColor: "#161a20",
-                  color: "#f0f2f5",
-                }}
-                ...
-              >
+              style={{
+                ...styles.input,
+                fontSize: 24,
+                letterSpacing: 10,
+                textAlign: "center",
+              }}
               type="text"
               inputMode="numeric"
               placeholder="000000"
               maxLength={6}
               value={otp}
-              onChange={e => setOtp(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
             />
             <button
               style={{
@@ -326,7 +399,12 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#fff",
   },
   logoText: { fontSize: 24, fontWeight: 700, color: "#f0f2f5" },
-  subtitle: { color: "#8a8f9a", fontSize: 14, marginBottom: "1.5rem", lineHeight: 1.7 },
+  subtitle: {
+    color: "#8a8f9a",
+    fontSize: 14,
+    marginBottom: "1.5rem",
+    lineHeight: 1.7,
+  },
   error: {
     color: "#ff5656",
     fontSize: 13,

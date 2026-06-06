@@ -37,7 +37,7 @@ function mapRow(row: Record<string, unknown>): Experience {
   return {
     id: row.id as number,
     studentName: row.student_name as string,
-    companyName: row.company_name as string,
+    companyName: row.company as string,
     role: row.role as string,
     rounds: row.rounds as number,
     description: row.description as string | null,
@@ -61,7 +61,7 @@ export async function listExperiences(search?: string): Promise<Experience[]> {
 
   if (search?.trim()) {
     const term = search.trim();
-    query = query.or(`company_name.ilike.%${term}%,role.ilike.%${term}%`);
+    query = query.or(`company.ilike.%${term}%,role.ilike.%${term}%`);
   }
 
   const { data, error } = await query;
@@ -74,7 +74,7 @@ export async function createExperience(input: InsertExperience): Promise<Experie
     .from("experiences")
     .insert({
       student_name: input.studentName,
-      company_name: input.companyName,
+      company: input.companyName,
       role: input.role,
       rounds: input.rounds,
       package_offered: input.packageOffered ?? null,

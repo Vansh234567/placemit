@@ -79,7 +79,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-6">
-                {activity?.map((item) => (
+                {Array.isArray(activity) && activity.map((item) => (
                   <div key={item.id} className="flex items-center gap-4">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
                       {item.actorName.charAt(0)}
@@ -108,7 +108,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-6">
-                {topCompanies?.map((company) => (
+                {Array.isArray(topCompanies) && topCompanies.map((company) => (
                   <div key={company.companyId} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center">

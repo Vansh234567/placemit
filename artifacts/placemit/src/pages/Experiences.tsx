@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useListExperiences, useCreateExperience } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { getListExperiencesQueryKey } from "@workspace/api-client-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { listExperiences, createExperience, type Experience } from "@/lib/supabase-experiences";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,11 +82,12 @@ export default function Experiences() {
 
   const isSenior = Number(profile?.year) >= 4;
 
-  const { data: experiences, isLoading } = useListExperiences(
-    debouncedSearch ? { search: debouncedSearch } : {},
-  );
+  const { data: experiences, isLoading } = useQuery({
+    queryKey: ["experiences", debouncedSearch],
+    queryFn: () => listExperiences(debouncedSearch || undefined),
+  });
 
-  const { mutateAsync: createExperience } = useCreateExperience();
+  // createExperience imported directly from supabase-experiences
 
   function handleSearchChange(val: string) {
     setSearch(val);
@@ -126,23 +126,21 @@ export default function Experiences() {
     setSubmitting(true);
     try {
       await createExperience({
-        data: {
-          studentName: profile.name,
-          companyName: form.companyName.trim(),
-          role: form.role.trim(),
-          rounds: parseInt(form.rounds) || 1,
-          packageOffered: form.packageOffered.trim() || undefined,
-          cgpa: cgpaNum,
-          cgpaCriteria: form.cgpaCriteria.trim() || undefined,
-          eligibleBranches: form.eligibleBranches.length > 0 ? form.eligibleBranches : undefined,
-          oaQuestions: form.oaQuestions.trim() || undefined,
-          interviewProcess: form.interviewProcess.trim() || undefined,
-          resourcesUsed: form.resourcesUsed.trim() || undefined,
-          tips: form.tips.trim() || undefined,
-        },
+        studentName: profile.name,
+        companyName: form.companyName.trim(),
+        role: form.role.trim(),
+        rounds: parseInt(form.rounds) || 1,
+        packageOffered: form.packageOffered.trim() || undefined,
+        cgpa: cgpaNum,
+        cgpaCriteria: form.cgpaCriteria.trim() || undefined,
+        eligibleBranches: form.eligibleBranches.length > 0 ? form.eligibleBranches : undefined,
+        oaQuestions: form.oaQuestions.trim() || undefined,
+        interviewProcess: form.interviewProcess.trim() || undefined,
+        resourcesUsed: form.resourcesUsed.trim() || undefined,
+        tips: form.tips.trim() || undefined,
       });
 
-      await queryClient.invalidateQueries({ queryKey: getListExperiencesQueryKey() });
+      await queryClient.invalidateQueries({ queryKey: ["experiences"] });
       toast({ title: "Experience shared!", description: "Thanks for helping your juniors." });
       setForm(EMPTY_FORM);
       setDialogOpen(false);
@@ -393,26 +391,7 @@ export default function Experiences() {
 
 // ── Experience Card ───────────────────────────────────────────────────────────
 
-type Exp = {
-  id: number;
-  studentName: string;
-  studentAvatarUrl?: string | null;
-  companyName: string;
-  role: string;
-  rounds: number;
-  packageOffered?: string | null;
-  cgpa?: number | null;
-  cgpaCriteria?: string | null;
-  eligibleBranches?: string[] | null;
-  oaQuestions?: string | null;
-  interviewProcess?: string | null;
-  description?: string | null;
-  resourcesUsed?: string | null;
-  tips?: string | null;
-  createdAt: string;
-};
-
-function ExperienceCard({ exp }: { exp: Exp }) {
+function ExperienceCard({ exp }: { exp: Experience }) {
   const [expanded, setExpanded] = useState(false);
 
   const processText = exp.interviewProcess || exp.description;

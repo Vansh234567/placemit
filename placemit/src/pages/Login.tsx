@@ -146,11 +146,21 @@ export default function LoginPage() {
               value={year}
               onChange={(e) => setYear(e.target.value)}
             >
-              <option value="">Select year</option>
-              {[1, 2, 3, 4].map((y) => (
-                <option key={y} value={y}>
-                  {y === 1 ? "1st" : y === 2 ? "2nd" : y === 3 ? "3rd" : "4th"}{" "}
-                  Year
+              <option value="">Select batch</option>
+
+              {[
+                "2027 Batch",
+                "2026 Batch",
+                "2025 Batch",
+                "2024 Batch",
+                "2023 Batch",
+                "2022 Batch",
+                "2021 Batch",
+                "2020 Batch",
+                "Other",
+              ].map((batch) => (
+                <option key={batch} value={batch}>
+                  {batch}
                 </option>
               ))}
             </select>
@@ -176,12 +186,14 @@ export default function LoginPage() {
               Code sent to <strong style={{ color: "#7ca4ff" }}>{email}</strong>
             </p>
             <input
-              style={{
-                ...styles.input,
-                fontSize: 24,
-                letterSpacing: 10,
-                textAlign: "center",
-              }}
+              <select
+                style={{
+                  ...styles.input,
+                  backgroundColor: "#161a20",
+                  color: "#f0f2f5",
+                }}
+                ...
+              >
               type="text"
               inputMode="numeric"
               placeholder="000000"

@@ -49,15 +49,18 @@ export type Branch = (typeof BRANCHES)[number];
 
 /** Year stored as integer: 1=1st Year, 2=2nd Year, 3=3rd Year, 4=4th Year, 5=Graduated */
 export const YEARS: { label: string; value: number }[] = [
-  { label: "2027 batch", value: 1 },
-  { label: "2026 batch", value: 2 },
-  { label: "2025 batch", value: 3 },
-  { label: "2024 batch", value: 4 },
-  { label: "2023 batch", value: 5 },
-  { label: "2022 batch", value: 6 },
-  { label: "2021 batch", value: 7 },
-  { label: "2020 batch", value: 8 },
-  { label: "Earlier batch", value: 9 },
+  { label: "2030 batch", value: 1 },
+  { label: "2029 batch", value: 2 },
+  { label: "2028 batch", value: 3 },
+  { label: "2027 batch", value: 4 },
+  { label: "2026 batch", value: 5 },
+  { label: "2025 batch", value: 6 },
+  { label: "2024 batch", value: 7 },
+  { label: "2023 batch", value: 8 },
+  { label: "2022 batch", value: 9 },
+  { label: "2021 batch", value: 10 },
+  { label: "2020 batch", value: 11 },
+  { label: "Earlier batch", value: 12 },
 ];
 
 /** Convert stored year integer to display label */

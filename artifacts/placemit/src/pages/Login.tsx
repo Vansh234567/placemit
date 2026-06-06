@@ -60,7 +60,7 @@ export default function LoginPage() {
     sessionStorage.setItem("pending_profile", JSON.stringify({
       name: name.trim(),
       branch,
-      year: parseInt(year),
+      year,
       roll_no: rollNo.trim(),
     }));
 
@@ -233,7 +233,14 @@ export default function LoginPage() {
               Code sent to <strong style={{ color: "#7ca4ff" }}>{email}</strong>
             </p>
             <input
-              style={{ ...styles.input, fontSize: 24, letterSpacing: 10, textAlign: "center" }}
+              <select
+                style={{
+                  ...styles.input,
+                  backgroundColor: "#161a20",
+                  color: "#f0f2f5",
+                }}
+                ...
+              >
               type="text"
               inputMode="numeric"
               placeholder="000000"

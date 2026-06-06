@@ -34,7 +34,7 @@ export default function LoginPage() {
       JSON.stringify({
         name: name.trim(),
         branch,
-        year: parseInt(year),
+        batch: parseInt(year),
         roll_no: rollNo.trim(),
       }),
     );
@@ -79,7 +79,7 @@ export default function LoginPage() {
           name: pending.name,
           email: data.user.email!,
           branch: pending.branch,
-          year: pending.year,
+          batch: pending.year,
           roll_no: pending.roll_no || null,
         },
         { onConflict: "id", ignoreDuplicates: true },

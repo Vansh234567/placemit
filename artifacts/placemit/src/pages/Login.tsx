@@ -118,7 +118,9 @@ export default function LoginPage() {
       return;
     }
 
-    // Upsert profile row
+    console.log("[verifyOTP] OTP verification success — uid:", data.user?.id);
+
+    // Profile upsert is required — failure blocks login
     if (data.user) {
       const pending = JSON.parse(sessionStorage.getItem("pending_profile") || "{}");
       console.log("[verifyOTP] upserting profile:", { id: data.user.id, ...pending });
@@ -133,11 +135,15 @@ export default function LoginPage() {
       }, { onConflict: "id", ignoreDuplicates: true });
 
       if (upsertError) {
-        console.error("[verifyOTP] profile upsert error:", upsertError.code, upsertError.message, upsertError);
-      } else {
-        console.log("[verifyOTP] profile upserted successfully");
+        console.error("[verifyOTP] profile upsert failed — signing out:", upsertError.code, upsertError.message, upsertError);
+        await supabase.auth.signOut();
+        console.log("[verifyOTP] forced sign out due to profile upsert failure");
+        setLoading(false);
+        setError("Account setup failed. Please try signing in again.");
+        return;
       }
 
+      console.log("[verifyOTP] profile upsert success — uid:", data.user.id);
       sessionStorage.removeItem("pending_profile");
     }
 

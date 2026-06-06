@@ -39,10 +39,45 @@ export function useAuthState(): AuthState {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function fetchProfile(userId: string) {
-    console.log("[useAuth] fetching profile for uid:", userId);
-    // .maybeSingle() returns null (not an error) when no row exists,
-    // avoiding PGRST116 "Cannot coerce result to single JSON object"
+  async function attemptProfileRecovery(userId: string): Promise<boolean> {
+    console.log("[useAuth] profile recovery attempt for uid:", userId);
+    const raw = sessionStorage.getItem("pending_profile");
+    if (!raw) {
+      console.warn("[useAuth] no pending_profile in sessionStorage — cannot self-heal");
+      return false;
+    }
+    try {
+      const pending = JSON.parse(raw);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      const { error } = await supabase.from("profiles").upsert({
+        id: userId,
+        name: pending.name,
+        email: user.email!,
+        branch: pending.branch,
+        year: pending.year,
+        roll_no: pending.roll_no || null,
+      }, { onConflict: "id", ignoreDuplicates: true });
+      if (error) {
+        console.error("[useAuth] profile recovery upsert failed:", error.code, error.message, error);
+        return false;
+      }
+      sessionStorage.removeItem("pending_profile");
+      console.log("[useAuth] profile recovery upsert succeeded");
+      return true;
+    } catch (e) {
+      console.error("[useAuth] profile recovery exception:", e);
+      return false;
+    }
+  }
+
+  async function fetchProfile(userId: string, isRecovery = false) {
+    if (isRecovery) {
+      console.log("[useAuth] re-fetching profile after recovery for uid:", userId);
+    } else {
+      console.log("[useAuth] fetching profile for uid:", userId);
+    }
+
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -50,15 +85,37 @@ export function useAuthState(): AuthState {
       .maybeSingle();
 
     if (error) {
-      // Real errors (network, RLS, table not found) — not "no rows"
       console.error("[useAuth] fetchProfile error:", error.code, error.message, error);
-    } else if (!data) {
-      console.warn("[useAuth] no profile row found for uid:", userId, "— RLS may be blocking SELECT or row does not exist");
-    } else {
-      console.log("[useAuth] profile loaded:", data);
+      setProfile(null);
+      setLoading(false);
+      return;
     }
 
-    setProfile(data as Profile | null);
+    if (!data) {
+      if (!isRecovery) {
+        console.warn("[useAuth] no profile row found for uid:", userId, "— attempting self-healing recovery");
+        const recovered = await attemptProfileRecovery(userId);
+        if (recovered) {
+          await fetchProfile(userId, true);
+        } else {
+          console.error("[useAuth] profile recovery failed — forcing sign out for uid:", userId);
+          await supabase.auth.signOut();
+          console.log("[useAuth] forced sign out due to missing profile");
+          setProfile(null);
+          setLoading(false);
+        }
+      } else {
+        console.error("[useAuth] profile still missing after recovery attempt — forcing sign out for uid:", userId);
+        await supabase.auth.signOut();
+        console.log("[useAuth] forced sign out due to missing profile");
+        setProfile(null);
+        setLoading(false);
+      }
+      return;
+    }
+
+    console.log("[useAuth] profile loaded:", data);
+    setProfile(data as Profile);
     setLoading(false);
   }
 

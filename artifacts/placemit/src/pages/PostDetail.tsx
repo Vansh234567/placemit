@@ -60,7 +60,12 @@ export default function PostDetail() {
 
   const handleComment = async () => {
     if (!profile?.id) return;
-
+    if ((profile?.batch_year ?? 9999) > 2026) {
+      toast({
+        title: "Only 2026 and earlier batches can answer",
+      });
+      return;
+    }
     if (!commentContent.trim()) return;
 
     const { error } = await supabase.from("answers").insert({
@@ -92,7 +97,32 @@ export default function PostDetail() {
 
   const handleUpvotePost = () => {};
 
-  const handleUpvoteComment = (commentId: number) => {};
+  const handleUpvotePost = async () => {
+    if (!profile?.id) return;
+
+    const { error } = await supabase.from("question_votes").insert({
+      user_id: profile.id,
+      question_id: postId,
+    });
+
+    if (error) {
+      toast({
+        title: "Already upvoted",
+      });
+      return;
+    }
+
+    await supabase
+      .from("questions")
+      .update({
+        votes: (post.votes ?? 0) + 1,
+      })
+      .eq("id", postId);
+
+    queryClient.invalidateQueries({
+      queryKey: ["question", postId],
+    });
+  };
 
   if (postLoading) {
     return (

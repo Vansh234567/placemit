@@ -73,17 +73,12 @@ export default function LoginPage() {
       const pending = JSON.parse(
         sessionStorage.getItem("pending_profile") || "{}",
       );
-      await supabase.from("profiles").upsert(
-        {
-          id: data.user.id,
-          name: pending.name,
-          email: data.user.email!,
-          branch: pending.branch,
-          batch: pending.year,
-          roll_no: pending.roll_no || null,
-        },
-        { onConflict: "id", ignoreDuplicates: true },
-      );
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        email,
+        name,
+        batch_year,
+      });
       sessionStorage.removeItem("pending_profile");
     }
     setLoading(false);
@@ -98,16 +93,14 @@ export default function LoginPage() {
           <div style={styles.logoIcon}>M</div>
           <span style={styles.logoText}>PlaceMIT</span>
         </div>
-
+        const [batchYear, setBatchYear] = useState("");
         <p style={styles.subtitle}>
           The placement intelligence + mentorship hub for{" "}
           <strong style={{ color: "#f0f2f5" }}>MIT Manipal</strong>.
           <br />
           Verify with your college email to join.
         </p>
-
         {error && <div style={styles.error}>{error}</div>}
-
         {step === "details" ? (
           <>
             <input
@@ -124,6 +117,24 @@ export default function LoginPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+            <select
+              value={batchYear}
+              onChange={(e) => setBatchYear(Number(e.target.value))}
+            >
+              <option value="">Select Batch</option>
+              <option value="Earlier batch">Earlier batch</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+            </select>
             <input
               style={styles.input}
               type="text"

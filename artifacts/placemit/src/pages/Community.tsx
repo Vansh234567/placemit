@@ -44,7 +44,15 @@ export default function Community() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("questions")
-        .select("*")
+        .select(
+          `
+          *,
+          profiles (
+            batch_year,
+            name
+          )
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -64,7 +72,12 @@ export default function Community() {
     e.preventDefault();
     upvotePost.mutate({ id }, { onSuccess: invalidate });
   };
-
+  if ((profile?.batch_year ?? 9999) > 2026) {
+    toast({
+      title: "Only 2026 and earlier batches can share experiences",
+    });
+    return;
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.id) {
@@ -243,7 +256,9 @@ export default function Community() {
                               U
                             </AvatarFallback>
                           </Avatar>
-                          <span>Anonymous User</span>
+                          <span>
+                            Anonymous User • Batch {post.profiles?.batch_year}
+                          </span>
                         </div>
                         <span>&bull;</span>
                         <span>

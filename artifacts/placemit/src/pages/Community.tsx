@@ -1,4 +1,3 @@
-import { useUpvotePost } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -44,15 +43,7 @@ export default function Community() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("questions")
-        .select(
-          `
-          *,
-          profiles (
-            batch_year,
-            name
-          )
-        `,
-        )
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -61,29 +52,27 @@ export default function Community() {
     },
   });
 
-  const upvotePost = useUpvotePost();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: getListPostsQueryKey() });
-
   const handleUpvote = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
-    upvotePost.mutate({ id }, { onSuccess: invalidate });
   };
-  if ((profile?.batch_year ?? 9999) > 2026) {
-    toast({
-      title: "Only 2026 and earlier batches can share experiences",
-    });
-    return;
-  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile?.id) {
-      console.error("No profile found");
+      toast({
+        title: "Please login first",
+      });
       return;
     }
+    if ((profile?.batch_year ?? 9999) > 2026) {
+      toast({
+        title: "Only 2026 and earlier batches can share experiences",
+      });
+      return;
+    }
+
     if (!title.trim() || !content.trim()) return;
 
     const { data, error } = await supabase
@@ -155,7 +144,7 @@ export default function Community() {
                 />
               </div>
               <div className="flex justify-end pt-2">
-                <Button type="submit"></Button>
+                <Button type="submit">Submit Post</Button>
               </div>
             </form>
           </DialogContent>
@@ -256,9 +245,7 @@ export default function Community() {
                               U
                             </AvatarFallback>
                           </Avatar>
-                          <span>
-                            Anonymous User • Batch {post.profiles?.batch_year}
-                          </span>
+                          <span>at Anonymous User</span>
                         </div>
                         <span>&bull;</span>
                         <span>

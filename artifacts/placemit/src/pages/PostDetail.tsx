@@ -274,3 +274,4 @@ export default function PostDetail() {
     </div>
   );
 }
+const handleUpvoteComment = (commentId: number) => {};

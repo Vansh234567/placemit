@@ -1,4 +1,8 @@
-import { useListPosts, useUpvotePost, getListPostsQueryKey, useCreatePost } from "@workspace/api-client-react";
+import {
+  useListPosts,
+  useUpvotePost,
+  getListPostsQueryKey,
+} from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -6,8 +10,22 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MessageSquare, ArrowBigUp, Plus, Clock, Search, TrendingUp } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  MessageSquare,
+  ArrowBigUp,
+  Plus,
+  Clock,
+  Search,
+  TrendingUp,
+} from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,16 +43,28 @@ export default function Community() {
   const params: Record<string, string> = { sort };
   if (search.trim()) params.search = search.trim();
 
-  const { data: posts, isLoading } = useListPosts(params as any, {
-    query: { queryKey: getListPostsQueryKey(params as any) },
+  const { data: posts } = useQuery({
+    queryKey: ["questions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("questions")
+        .select("*")
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (error) throw error;
+
+      return data;
+    },
   });
 
   const upvotePost = useUpvotePost();
-  const createPost = useCreatePost();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: getListPostsQueryKey() });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: getListPostsQueryKey() });
 
   const handleUpvote = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
@@ -44,8 +74,28 @@ export default function Community() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
-    createPost.mutate(
-      { data: { title: title.trim(), content: content.trim(), authorName: profile?.name ?? "Anonymous" } },
+      const {
+        data,
+        error
+      } = await supabase
+        .from("questions")
+        .insert({
+          author_id: profile.id,
+          title: values.title,
+          content: values.content,
+          tags: values.tags || [],
+          is_anon: values.isAnon || false,
+          votes: 0
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+    queryClient.invalidateQueries({
+      queryKey: ["questions"]
+    });
       {
         onSuccess: () => {
           toast({ title: "Post created" });
@@ -64,7 +114,9 @@ export default function Community() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Community</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Ask questions, share tips, help each other.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Ask questions, share tips, help each other.
+          </p>
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
@@ -85,7 +137,7 @@ export default function Community() {
                   id="post-title"
                   placeholder="What's your question or topic?"
                   value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  onChange={(e) => setTitle(e.target.value)}
                   required
                 />
               </div>
@@ -96,7 +148,7 @@ export default function Community() {
                   placeholder="Share more detail..."
                   className="min-h-[140px]"
                   value={content}
-                  onChange={e => setContent(e.target.value)}
+                  onChange={(e) => setContent(e.target.value)}
                   required
                 />
               </div>
@@ -118,7 +170,7 @@ export default function Community() {
             className="pl-9"
             placeholder="Search posts..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="flex border rounded-md overflow-hidden shrink-0">
@@ -152,19 +204,25 @@ export default function Community() {
       {/* List */}
       <div className="space-y-3">
         {isLoading ? (
-          [1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full" />)
+          [1, 2, 3].map((i) => <Skeleton key={i} className="h-28 w-full" />)
         ) : posts?.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed rounded-lg space-y-2">
             <p className="text-base font-medium text-foreground">
               {search ? `No posts matching "${search}"` : "No posts yet."}
             </p>
             <p className="text-sm text-muted-foreground">
-              {search ? "Try a different keyword." : "Be the first to start a conversation."}
+              {search
+                ? "Try a different keyword."
+                : "Be the first to start a conversation."}
             </p>
           </div>
         ) : (
-          posts?.map(post => (
-            <Link key={post.id} href={`/community/${post.id}`} className="block">
+          posts?.map((post) => (
+            <Link
+              key={post.id}
+              href={`/community/${post.id}`}
+              className="block"
+            >
               <Card className="hover:border-primary/40 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex gap-3">
@@ -172,28 +230,38 @@ export default function Community() {
                     <div className="flex flex-col items-center gap-0.5 shrink-0">
                       <button
                         type="button"
-                        onClick={e => handleUpvote(e, post.id)}
+                        onClick={(e) => handleUpvote(e, post.id)}
                         className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                       >
                         <ArrowBigUp className="w-5 h-5" />
                       </button>
-                      <span className="text-xs font-semibold tabular-nums">{post.upvotes}</span>
+                      <span className="text-xs font-semibold tabular-nums">
+                        {post.upvotes}
+                      </span>
                     </div>
 
                     {/* Body */}
                     <div className="flex-1 min-w-0 space-y-1">
-                      <p className="font-semibold text-sm leading-snug line-clamp-2">{post.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{post.content}</p>
+                      <p className="font-semibold text-sm leading-snug line-clamp-2">
+                        {post.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {post.content}
+                      </p>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
                         <div className="flex items-center gap-1">
                           <Avatar className="w-4 h-4">
                             <AvatarImage src={post.authorAvatarUrl ?? ""} />
-                            <AvatarFallback className="text-[9px]">{post.authorName[0]}</AvatarFallback>
+                            <AvatarFallback className="text-[9px]">
+                              {post.authorName[0]}
+                            </AvatarFallback>
                           </Avatar>
                           <span>{post.authorName}</span>
                         </div>
                         <span>&bull;</span>
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </span>
                         <span>&bull;</span>
                         <span className="flex items-center gap-1">
                           <MessageSquare className="w-3 h-3" />

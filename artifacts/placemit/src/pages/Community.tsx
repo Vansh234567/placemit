@@ -42,12 +42,13 @@ export default function Community() {
   const { data: posts } = useQuery({
     queryKey: ["questions"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("questions")
-        .select("*")
-        .order("created_at", {
-          ascending: false,
-        });
+      const {
+        data,
+        error,
+        isLoading: postsLoading,
+      } = await supabase.from("questions").select("*").order("created_at", {
+        ascending: false,
+      });
 
       if (error) throw error;
 
@@ -192,7 +193,7 @@ export default function Community() {
 
       {/* List */}
       <div className="space-y-3">
-        {isLoading ? (
+        {postsLoading ? (
           [1, 2, 3].map((i) => <Skeleton key={i} className="h-28 w-full" />)
         ) : posts?.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed rounded-lg space-y-2">

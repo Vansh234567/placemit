@@ -95,8 +95,6 @@ export default function PostDetail() {
     });
   };
 
-  const handleUpvotePost = () => {};
-
   const handleUpvotePost = async () => {
     if (!profile?.id) return;
 

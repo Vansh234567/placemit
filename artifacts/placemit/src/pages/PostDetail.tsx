@@ -22,30 +22,27 @@ export default function PostDetail() {
   const postId = Number(id);
   const { profile } = useAuth();
   const [commentContent, setCommentContent] = useState("");
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-      const { data: post, isLoading: postLoading } = useQuery({
-        queryKey: ["question", postId],
-        queryFn: async () => {
-          const { data, error } = await supabase
-            .from("questions")
-            .select(`
-              *,
-              profiles!questions_author_id_fkey (
-                batch_year,
-                name
-              )
-            `)
-            .eq("id", postId)
-            .single();
-
-          if (error) throw error;
-          return data;
-        },
-        enabled: !!postId,
-      });
+  const { data: post, isLoading: postLoading } = useQuery({
+    queryKey: ["question", postId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("questions")
+        .select(
+          `
+          *,
+          profiles!questions_author_id_fkey (
+            batch_year,
+            name
+          )
+        `,
+        )
+        .eq("id", postId)
+        .single();
 
       if (error) throw error;
-
       return data;
     },
     enabled: !!postId,
@@ -61,21 +58,15 @@ export default function PostDetail() {
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-
       return data ?? [];
     },
     enabled: !!postId,
   });
 
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   const handleComment = async () => {
     if (!profile?.id) return;
     if ((profile?.batch_year ?? 9999) > 2026) {
-      toast({
-        title: "Only 2026 and earlier batches can answer",
-      });
+      toast({ title: "Only 2026 and earlier batches can answer" });
       return;
     }
     if (!commentContent.trim()) return;
@@ -88,27 +79,18 @@ export default function PostDetail() {
 
     if (error) {
       console.error(error);
-
-      toast({
-        title: "Failed to post answer",
-      });
-
+      toast({ title: "Failed to post answer" });
       return;
     }
 
     setCommentContent("");
 
-    await queryClient.invalidateQueries({
-      queryKey: ["question", postId],
-    });
+    await queryClient.invalidateQueries({ queryKey: ["answers", postId] });
 
-    toast({
-      title: "Answer posted",
-    });
+    toast({ title: "Answer posted" });
   };
 
   const handleUpvotePost = async () => {
-    
     if (!profile?.id) return;
 
     const { error } = await supabase.from("question_votes").insert({
@@ -117,26 +99,22 @@ export default function PostDetail() {
     });
 
     if (error) {
-      toast({
-        title: "Already upvoted",
-      });
+      toast({ title: "Already upvoted" });
       return;
     }
 
     await supabase
       .from("questions")
-      .update({
-        votes: (post.votes ?? 0) + 1,
-      })
+      .update({ votes: Number(post?.votes ?? 0) + 1 })
       .eq("id", postId);
 
-    await queryClient.invalidateQueries({
-      queryKey: ["question", postId],
-    });
+    await queryClient.invalidateQueries({ queryKey: ["question", postId] });
   };
-const handleUpvoteComment = (commentId: number) => {
-  console.log("Comment upvote pending:", commentId);
-};
+
+  const handleUpvoteComment = (commentId: number) => {
+    console.log("Comment upvote pending:", commentId);
+  };
+
   if (postLoading) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -182,10 +160,14 @@ const handleUpvoteComment = (commentId: number) => {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-[10px]">U</AvatarFallback>
+                      <AvatarFallback className="text-[10px]">
+                        {post.is_anon ? "A" : (post.profiles?.name?.[0] ?? "U")}
+                      </AvatarFallback>
                     </Avatar>
                     <span className="font-medium">
-                      Anonymous User
+                      {post.is_anon
+                        ? "Anonymous"
+                        : (post.profiles?.name ?? "MIT Student")}
                       {post.profiles?.batch_year
                         ? ` • Batch ${post.profiles.batch_year}`
                         : ""}
@@ -274,9 +256,7 @@ const handleUpvoteComment = (commentId: number) => {
                           U
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs font-semibold">
-                        Anonymous User
-                      </span>
+                      <span className="text-xs font-semibold">MIT Student</span>
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {new Date(comment.created_at).toLocaleDateString()}
@@ -294,4 +274,3 @@ const handleUpvoteComment = (commentId: number) => {
     </div>
   );
 }
-const handleUpvoteComment = (commentId: number) => {};

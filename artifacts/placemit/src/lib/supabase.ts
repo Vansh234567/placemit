@@ -42,7 +42,6 @@ export const BRANCHES = [
   "Mathematics & Computing",
   "Mechanical Engineering",
   "Mechatronics",
-  "Other",
 ] as const;
 
 export type Branch = (typeof BRANCHES)[number];
@@ -78,7 +77,6 @@ export type Profile = {
   email: string;
   branch: string;
   year: number;
-  roll_no?: string;
-  linkedin_url?: string;
-  created_at: string;
+  batch_year: number | null;
+  roll_no: string | null;
 };

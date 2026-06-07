@@ -34,9 +34,8 @@ export default function Community() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  const params: Record<string, string> = { sort };
-  if (search.trim()) params.search = search.trim();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: posts, isLoading: postsLoading } = useQuery({
     queryKey: ["questions"],
@@ -60,62 +59,35 @@ export default function Community() {
     },
   });
 
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   const handleUpvote = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
   };
-        const handleSubmit = async (e: React.FormEvent) => {
-          e.preventDefault();
 
-          if (!profile?.id) {
-            toast({ title: "Please login first" });
-            return;
-          }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-          const { data, error } = await supabase
-            .from("questions")
-            .insert({
-              author_id: profile.id,
-              title,
-              content,
-              tags: [],
-              is_anon: false,
-              votes: 0,
-            })
-            .select()
-            .single();
+    if (!profile?.id) {
+      toast({ title: "Please login first" });
+      return;
+    }
 
-          if (error) {
-            console.error(error);
-            return;
-          }
-        };
-
-        setTitle("");
-        setContent("");
-        setOpen(false);
-
-        queryClient.invalidateQueries({
-          queryKey: ["questions"],
-        });
-      };
     if ((profile?.batch_year ?? 9999) > 2026) {
       toast({
-        title: "Only 2026 and earlier batches can share experiences",
+        title: "Only 2026 and earlier batches can post",
       });
       return;
     }
 
-    if (!title.trim() || !content.trim()) return;
+    if (!title.trim() || !content.trim()) {
+      return;
+    }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("questions")
       .insert({
         author_id: profile.id,
-        title: title,
-        content: content,
+        title,
+        content,
         tags: [],
         is_anon: false,
         votes: 0,
@@ -125,13 +97,19 @@ export default function Community() {
 
     if (error) {
       console.error(error);
+      toast({ title: "Failed to create post" });
       return;
     }
 
-    console.log("Post created:", data);
-
     setTitle("");
     setContent("");
+    setOpen(false);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["questions"],
+    });
+
+    toast({ title: "Post created" });
   };
 
   return (
@@ -277,11 +255,13 @@ export default function Community() {
                           <Avatar className="w-4 h-4">
                             <AvatarImage src="" />
                             <AvatarFallback className="text-[9px]">
-                              U
+                              {post.profiles?.name?.[0] ?? "U"}
                             </AvatarFallback>
                           </Avatar>
                           <span>
-                            Anonymous User
+                            {post.is_anon
+                              ? "Anonymous"
+                              : (post.profiles?.name ?? "MIT Student")}
                             {post.profiles?.batch_year
                               ? ` • Batch ${post.profiles.batch_year}`
                               : ""}

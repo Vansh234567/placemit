@@ -66,36 +66,32 @@ export default function Community() {
   const handleUpvote = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
   };
-      const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+        const handleSubmit = async (e: React.FormEvent) => {
+          e.preventDefault();
 
-        if (!profile?.id) {
-          toast({ title: "Please login first" });
-          return;
-        }
+          if (!profile?.id) {
+            toast({ title: "Please login first" });
+            return;
+          }
 
-        if ((profile?.batch_year ?? 9999) > 2026) {
-          toast({
-            title: "Only 2026 and earlier batches can post",
-          });
-          return;
-        }
+          const { data, error } = await supabase
+            .from("questions")
+            .insert({
+              author_id: profile.id,
+              title,
+              content,
+              tags: [],
+              is_anon: false,
+              votes: 0,
+            })
+            .select()
+            .single();
 
-        const { error } = await supabase
-          .from("questions")
-          .insert({
-            author_id: profile.id,
-            title,
-            content,
-            tags: [],
-            is_anon: false,
-            votes: 0,
-          });
-
-        if (error) {
-          console.error(error);
-          return;
-        }
+          if (error) {
+            console.error(error);
+            return;
+          }
+        };
 
         setTitle("");
         setContent("");

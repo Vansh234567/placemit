@@ -58,9 +58,35 @@ export default function PostDetail() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const handleComment = () => {
+  const handleComment = async () => {
+    if (!profile?.id) return;
+
+    if (!commentContent.trim()) return;
+
+    const { error } = await supabase.from("answers").insert({
+      question_id: postId,
+      author_id: profile.id,
+      content: commentContent,
+    });
+
+    if (error) {
+      console.error(error);
+
+      toast({
+        title: "Failed to post answer",
+      });
+
+      return;
+    }
+
+    setCommentContent("");
+
+    queryClient.invalidateQueries({
+      queryKey: ["answers", postId],
+    });
+
     toast({
-      title: "Comments migration pending",
+      title: "Answer posted",
     });
   };
 
@@ -188,9 +214,7 @@ export default function PostDetail() {
                   >
                     <ArrowBigUp className="w-4 h-4" />
                   </button>
-                  <span className="text-xs font-semibold tabular-nums">
-                    0
-                  </span>
+                  <span className="text-xs font-semibold tabular-nums">0</span>
                 </div>
 
                 <div className="flex-1 space-y-1.5">

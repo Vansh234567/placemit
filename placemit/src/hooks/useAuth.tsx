@@ -35,14 +35,17 @@ export function useAuthState(): AuthState {
   }, []);
 
   async function fetchProfile(userId: string) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-    setProfile(data as Profile | null);
-    setLoading(false);
-  }
+    const { data } =const { error } = await supabase.from("profiles").upsert({
+    id: userId,
+    name: pending.name,
+    email: user.email!,
+    branch: pending.branch,
+    batch_year: pending.batch,
+    roll_no: pending.roll_no || null,
+  }, {
+    onConflict: "id",
+    ignoreDuplicates: true,
+  });
 
   async function logout() {
     await supabase.auth.signOut();

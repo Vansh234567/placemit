@@ -139,12 +139,12 @@ export default function LoginPage() {
 
       const { error: upsertError } = await supabase.from("profiles").upsert(
         {
-          id: data.user.id,
-          name: pending.name,
-          email: data.user.email!,
-          branch: pending.branch,
-          year: pending.year,
-          roll_no: pending.roll_no || null,
+          id: user.id,
+          name,
+          email,
+          branch,
+          year,
+          batch_year,
         },
         { onConflict: "id", ignoreDuplicates: true },
       );

@@ -16,7 +16,10 @@ export function useAuthState(): AuthState {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("[useAuth] restored session:", session ? `uid=${session.user.id}` : "none");
+      console.log(
+        "[useAuth] restored session:",
+        session ? `uid=${session.user.id}` : "none",
+      );
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -25,8 +28,14 @@ export function useAuthState(): AuthState {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[useAuth] auth state change:", event, session ? `uid=${session.user.id}` : "none");
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(
+        "[useAuth] auth state change:",
+        event,
+        session ? `uid=${session.user.id}` : "none",
+      );
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -43,23 +52,37 @@ export function useAuthState(): AuthState {
     console.log("[useAuth] profile recovery attempt for uid:", userId);
     const raw = sessionStorage.getItem("pending_profile");
     if (!raw) {
-      console.warn("[useAuth] no pending_profile in sessionStorage — cannot self-heal");
+      console.warn(
+        "[useAuth] no pending_profile in sessionStorage — cannot self-heal",
+      );
       return false;
     }
     try {
       const pending = JSON.parse(raw);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return false;
-      const { error } = await supabase.from("profiles").upsert({
-        id: userId,
-        name: pending.name,
-        email: user.email!,
-        branch: pending.branch,
-        year: pending.year,
-        roll_no: pending.roll_no || null,
-      }, { onConflict: "id", ignoreDuplicates: true });
+
+      const { error } = await supabase.from("profiles").upsert(
+        {
+          id: userId,
+          name: pending.name,
+          email: user.email!,
+          branch: pending.branch,
+          batch_year: pending.batch,
+          roll_no: pending.roll_no || null,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+
       if (error) {
-        console.error("[useAuth] profile recovery upsert failed:", error.code, error.message, error);
+        console.error(
+          "[useAuth] profile recovery upsert failed:",
+          error.code,
+          error.message,
+          error,
+        );
         return false;
       }
       sessionStorage.removeItem("pending_profile");
@@ -73,7 +96,10 @@ export function useAuthState(): AuthState {
 
   async function fetchProfile(userId: string, isRecovery = false) {
     if (isRecovery) {
-      console.log("[useAuth] re-fetching profile after recovery for uid:", userId);
+      console.log(
+        "[useAuth] re-fetching profile after recovery for uid:",
+        userId,
+      );
     } else {
       console.log("[useAuth] fetching profile for uid:", userId);
     }
@@ -85,7 +111,12 @@ export function useAuthState(): AuthState {
       .maybeSingle();
 
     if (error) {
-      console.error("[useAuth] fetchProfile error:", error.code, error.message, error);
+      console.error(
+        "[useAuth] fetchProfile error:",
+        error.code,
+        error.message,
+        error,
+      );
       setProfile(null);
       setLoading(false);
       return;
@@ -93,21 +124,29 @@ export function useAuthState(): AuthState {
 
     if (!data) {
       if (!isRecovery) {
-        console.warn("[useAuth] no profile row found for uid:", userId, "— attempting self-healing recovery");
+        console.warn(
+          "[useAuth] no profile row found for uid:",
+          userId,
+          "— attempting self-healing recovery",
+        );
         const recovered = await attemptProfileRecovery(userId);
         if (recovered) {
           await fetchProfile(userId, true);
         } else {
-          console.error("[useAuth] profile recovery failed — forcing sign out for uid:", userId);
+          console.error(
+            "[useAuth] profile recovery failed — forcing sign out for uid:",
+            userId,
+          );
           await supabase.auth.signOut();
-          console.log("[useAuth] forced sign out due to missing profile");
           setProfile(null);
           setLoading(false);
         }
       } else {
-        console.error("[useAuth] profile still missing after recovery attempt — forcing sign out for uid:", userId);
+        console.error(
+          "[useAuth] profile still missing after recovery attempt — forcing sign out for uid:",
+          userId,
+        );
         await supabase.auth.signOut();
-        console.log("[useAuth] forced sign out due to missing profile");
         setProfile(null);
         setLoading(false);
       }

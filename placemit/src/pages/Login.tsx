@@ -1,17 +1,18 @@
-// placemit/src/pages/Login.tsx
-// Drop this file into: placemit/src/pages/Login.tsx
-
 import { useState } from "react";
 import { supabase, ALLOWED_DOMAIN, BRANCHES } from "@/lib/supabase";
 
 type Step = "details" | "otp";
+
+const BATCH_YEARS = [
+  2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030,
+];
 
 export default function LoginPage() {
   const [step, setStep] = useState<Step>("details");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [branch, setBranch] = useState("");
-  const [year, setYear] = useState("");
+  const [batchYear, setBatchYear] = useState<number | "">("");
   const [rollNo, setRollNo] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,49 +20,68 @@ export default function LoginPage() {
 
   async function sendOTP() {
     setError("");
+
     if (!email.trim().endsWith(`@${ALLOWED_DOMAIN}`)) {
       setError(`Only @${ALLOWED_DOMAIN} emails are allowed`);
       return;
     }
-    if (!name.trim() || !branch || !year) {
-      setError("Please fill in all fields");
+    if (!name.trim()) {
+      setError("Please enter your full name");
       return;
     }
+    if (!branch) {
+      setError("Please select your branch");
+      return;
+    }
+    if (!batchYear) {
+      setError("Please select your batch year");
+      return;
+    }
+
     setLoading(true);
-    // Store pending profile data; we'll save it after OTP verify
+
+    // Store pending profile so we can recover if OTP verify loses state
     sessionStorage.setItem(
       "pending_profile",
       JSON.stringify({
         name: name.trim(),
         branch,
-        batch: parseInt(year),
+        batch: Number(batchYear),
         roll_no: rollNo.trim(),
       }),
     );
+
     const { error: err } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: true },
     });
+
     setLoading(false);
+
     if (err) {
       setError(err.message);
       return;
     }
+
     setStep("otp");
   }
 
   async function verifyOTP() {
     setError("");
+
     if (otp.length !== 6) {
       setError("Enter the 6-digit code from your email");
       return;
     }
+
     setLoading(true);
+
     const { data, error: err } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: otp,
       type: "email",
     });
+
     if (err) {
       setLoading(false);
       setError(err.message);
@@ -73,16 +93,29 @@ export default function LoginPage() {
       const pending = JSON.parse(
         sessionStorage.getItem("pending_profile") || "{}",
       );
-      await supabase.from("profiles").upsert({
-        id: user.id,
-        email,
-        name,
-        batch_year,
-      });
-      sessionStorage.removeItem("pending_profile");
+
+      const { error: upsertError } = await supabase.from("profiles").upsert(
+        {
+          id: data.user.id,
+          name: pending.name ?? name.trim(),
+          email: data.user.email!,
+          branch: pending.branch ?? branch,
+          batch_year: pending.batch ?? Number(batchYear),
+          roll_no: pending.roll_no || null,
+        },
+        { onConflict: "id", ignoreDuplicates: true },
+      );
+
+      if (upsertError) {
+        console.error("[Login] profile upsert error:", upsertError);
+      } else {
+        sessionStorage.removeItem("pending_profile");
+        console.log("[Login] profile upserted successfully");
+      }
     }
+
     setLoading(false);
-    // Auth state change listener in useAuth will pick up the new session automatically
+    // Auth state change listener in useAuth picks up the new session automatically
   }
 
   return (
@@ -93,14 +126,16 @@ export default function LoginPage() {
           <div style={styles.logoIcon}>M</div>
           <span style={styles.logoText}>PlaceMIT</span>
         </div>
-        const [batchYear, setBatchYear] = useState("");
+
         <p style={styles.subtitle}>
           The placement intelligence + mentorship hub for{" "}
           <strong style={{ color: "#f0f2f5" }}>MIT Manipal</strong>.
           <br />
           Verify with your college email to join.
         </p>
+
         {error && <div style={styles.error}>{error}</div>}
+
         {step === "details" ? (
           <>
             <input
@@ -117,24 +152,6 @@ export default function LoginPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <select
-              value={batchYear}
-              onChange={(e) => setBatchYear(Number(e.target.value))}
-            >
-              <option value="">Select Batch</option>
-              <option value="Earlier batch">Earlier batch</option>
-              <option value="2020">2020</option>
-              <option value="2021">2021</option>
-              <option value="2022">2022</option>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-              <option value="2029">2029</option>
-              <option value="2030">2030</option>
-            </select>
             <input
               style={styles.input}
               type="text"
@@ -149,29 +166,22 @@ export default function LoginPage() {
             >
               <option value="">Select branch</option>
               {BRANCHES.map((b) => (
-                <option key={b}>{b}</option>
+                <option key={b} value={b}>
+                  {b}
+                </option>
               ))}
             </select>
             <select
               style={styles.input}
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
+              value={batchYear}
+              onChange={(e) =>
+                setBatchYear(e.target.value ? Number(e.target.value) : "")
+              }
             >
-              <option value="">Select batch</option>
-
-              {[
-                "2027 Batch",
-                "2026 Batch",
-                "2025 Batch",
-                "2024 Batch",
-                "2023 Batch",
-                "2022 Batch",
-                "2021 Batch",
-                "2020 Batch",
-                "Other",
-              ].map((batch) => (
-                <option key={batch} value={batch}>
-                  {batch}
+              <option value="">Select batch year</option>
+              {BATCH_YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
                 </option>
               ))}
             </select>
@@ -179,7 +189,7 @@ export default function LoginPage() {
               {loading ? "Sending code..." : "Send Verification Code →"}
             </button>
             <p style={styles.hint}>
-              A 8-digit code will be sent to your Manipal email inbox.
+              A 6-digit code will be sent to your Manipal email inbox.
               <br />
               Fake or nonexistent emails won't receive it.
             </p>

@@ -14,7 +14,6 @@ import {
   Send,
 } from "lucide-react";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -105,7 +104,7 @@ export default function PostDetail() {
                 <ArrowBigUp className="w-6 h-6" />
               </button>
               <span className="text-sm font-bold tabular-nums">
-                {post.upvotes}
+                {post.votes ?? 0}
               </span>
             </div>
 
@@ -114,16 +113,14 @@ export default function PostDetail() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-[10px]">
-                        {post.authorName[0]}
-                      </AvatarFallback>
+                      <AvatarFallback className="text-[10px]">U</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{post.authorName}</span>
+                    <span className="font-medium">Anonymous User</span>
                   </div>
                   <span>&bull;</span>
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {new Date(post.createdAt).toLocaleDateString()}
+                    {new Date(post.created_at).toLocaleDateString()}
                   </div>
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight">
@@ -142,7 +139,8 @@ export default function PostDetail() {
       <div className="space-y-5">
         <h3 className="text-base font-semibold flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-muted-foreground" />
-          {post.commentsCount} {post.commentsCount === 1 ? "Answer" : "Answers"}
+          {comments?.length ?? 0}{" "}
+          {(comments?.length ?? 0) === 1 ? "Answer" : "Answers"}
         </h3>
 
         {/* Add comment */}
@@ -158,10 +156,10 @@ export default function PostDetail() {
               <Button
                 size="sm"
                 onClick={handleComment}
-                disabled={createComment.isPending || !commentContent.trim()}
+                disabled={!commentContent.trim()}
               >
                 <Send className="w-3.5 h-3.5 mr-1.5" />
-                {createComment.isPending ? "Posting..." : "Post Answer"}
+                Post Answer
               </Button>
             </div>
           </CardContent>
@@ -191,7 +189,7 @@ export default function PostDetail() {
                     <ArrowBigUp className="w-4 h-4" />
                   </button>
                   <span className="text-xs font-semibold tabular-nums">
-                    {comment.upvotes}
+                    0
                   </span>
                 </div>
 
@@ -199,17 +197,17 @@ export default function PostDetail() {
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex items-center gap-1.5">
                       <Avatar className="w-5 h-5">
-                        <AvatarImage src={comment.authorAvatarUrl ?? ""} />
+                        <AvatarImage src="" />
                         <AvatarFallback className="text-[9px] bg-muted">
-                          {comment.authorName[0]}
+                          U
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-xs font-semibold">
-                        {comment.authorName}
+                        Anonymous User
                       </span>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(comment.createdAt).toLocaleDateString()}
+                      {new Date(comment.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">

@@ -39,20 +39,17 @@ export default function Community() {
   const params: Record<string, string> = { sort };
   if (search.trim()) params.search = search.trim();
 
-  const { data: posts } = useQuery({
+  const { data: posts, isLoading: postsLoading } = useQuery({
     queryKey: ["questions"],
     queryFn: async () => {
-      const {
-        data,
-        error,
-        isLoading: postsLoading,
-      } = await supabase.from("questions").select("*").order("created_at", {
-        ascending: false,
-      });
+      const { data, error } = await supabase
+        .from("questions")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      return data;
+      return data ?? [];
     },
   });
 

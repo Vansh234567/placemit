@@ -223,7 +223,7 @@ export default function Community() {
                         <ArrowBigUp className="w-5 h-5" />
                       </button>
                       <span className="text-xs font-semibold tabular-nums">
-                        {post.upvotes}
+                        {post.votes ?? 0}
                       </span>
                     </div>
 
@@ -238,21 +238,20 @@ export default function Community() {
                       <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
                         <div className="flex items-center gap-1">
                           <Avatar className="w-4 h-4">
-                            <AvatarImage src={post.authorAvatarUrl ?? ""} />
+                            <AvatarImage src="" />
                             <AvatarFallback className="text-[9px]">
-                              {post.authorName[0]}
+                              U
                             </AvatarFallback>
                           </Avatar>
-                          <span>{post.authorName}</span>
+                          <span>Anonymous User</span>
                         </div>
                         <span>&bull;</span>
                         <span>
-                          {new Date(post.createdAt).toLocaleDateString()}
+                          {new Date(post.created_at).toLocaleDateString()}
                         </span>
                         <span>&bull;</span>
                         <span className="flex items-center gap-1">
-                          <MessageSquare className="w-3 h-3" />
-                          {post.commentsCount}
+                          <MessageSquare className="w-3 h-3" />0
                         </span>
                       </div>
                     </div>

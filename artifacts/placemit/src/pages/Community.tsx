@@ -13,14 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  MessageSquare,
-  ArrowBigUp,
-  Plus,
-  Clock,
-  Search,
-  TrendingUp,
-} from "lucide-react";
+import { MessageSquare, Plus, Clock, Search, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -57,10 +50,6 @@ export default function Community() {
       return data ?? [];
     },
   });
-
-  const handleUpvote = (e: React.MouseEvent, id: number) => {
-    e.preventDefault();
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,53 +207,36 @@ export default function Community() {
             >
               <Card className="hover:border-primary/40 transition-colors">
                 <CardContent className="p-4">
-                  <div className="flex gap-3">
-                    {/* Upvote */}
-                    <div className="flex flex-col items-center gap-0.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={(e) => handleUpvote(e, post.id)}
-                        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                      >
-                        <ArrowBigUp className="w-5 h-5" />
-                      </button>
-                      <span className="text-xs font-semibold tabular-nums">
-                        {post.votes ?? 0}
-                      </span>
-                    </div>
-
-                    {/* Body */}
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <p className="font-semibold text-sm leading-snug line-clamp-2">
-                        {post.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {post.content}
-                      </p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
-                        <div className="flex items-center gap-1">
-                          <Avatar className="w-4 h-4">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="text-[9px]">
-                              U
-                            </AvatarFallback>
-                          </Avatar>
-                          <span>
-                            Anonymous User
-                            {post.profiles?.batch_year
-                              ? ` • Batch ${post.profiles.batch_year}`
-                              : ""}
-                          </span>
-                        </div>
-                        <span>&bull;</span>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <p className="font-semibold text-sm leading-snug line-clamp-2">
+                      {post.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {post.content}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
+                      <div className="flex items-center gap-1">
+                        <Avatar className="w-4 h-4">
+                          <AvatarImage src="" />
+                          <AvatarFallback className="text-[9px]">
+                            U
+                          </AvatarFallback>
+                        </Avatar>
                         <span>
-                          {new Date(post.created_at).toLocaleDateString()}
-                        </span>
-                        <span>&bull;</span>
-                        <span className="flex items-center gap-1">
-                          <MessageSquare className="w-3 h-3" />0
+                          Anonymous User
+                          {post.profiles?.batch_year
+                            ? ` • Batch ${post.profiles.batch_year}`
+                            : ""}
                         </span>
                       </div>
+                      <span>&bull;</span>
+                      <span>
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </span>
+                      <span>&bull;</span>
+                      <span className="flex items-center gap-1">
+                        <MessageSquare className="w-3 h-3" />0
+                      </span>
                     </div>
                   </div>
                 </CardContent>

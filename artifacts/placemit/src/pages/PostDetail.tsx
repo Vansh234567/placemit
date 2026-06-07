@@ -6,13 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ArrowLeft,
-  ArrowBigUp,
-  Clock,
-  MessageSquare,
-  Send,
-} from "lucide-react";
+import { ArrowLeft, Clock, MessageSquare, Send } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -84,37 +78,6 @@ export default function PostDetail() {
     toast({ title: "Answer posted" });
   };
 
-  const handleUpvotePost = async () => {
-    if (!profile?.id) return;
-
-    const { error } = await supabase.from("question_votes").insert({
-      user_id: profile.id,
-      question_id: postId,
-    });
-
-    if (error) {
-      toast({ title: "Already upvoted" });
-      return;
-    }
-
-    const { data: updatedData, error: updateError } = await supabase
-      .from("questions")
-      .update({
-        votes: Number(post?.votes ?? 0) + 1,
-      })
-      .eq("id", postId)
-      .select();
-
-    console.log("updatedData", updatedData);
-    console.log("updateError", updateError);
-
-    await queryClient.invalidateQueries({ queryKey: ["question", postId] });
-  };
-
-  const handleUpvoteComment = (commentId: number) => {
-    console.log("Comment upvote pending:", commentId);
-  };
-
   if (postLoading) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -140,48 +103,32 @@ export default function PostDetail() {
       {/* Post */}
       <Card>
         <CardContent className="p-6 md:p-8">
-          <div className="flex items-start gap-4 sm:gap-6">
-            {/* Upvote column */}
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={handleUpvotePost}
-                className="p-1.5 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-              >
-                <ArrowBigUp className="w-6 h-6" />
-              </button>
-              <span className="text-sm font-bold tabular-nums">
-                {post.votes ?? 0}
-              </span>
-            </div>
-
-            <div className="flex-1 space-y-5">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-[10px]">U</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">
-                      Anonymous User
-                      {post.profiles?.batch_year
-                        ? ` • Batch ${post.profiles.batch_year}`
-                        : ""}
-                    </span>
-                  </div>
-                  <span>&bull;</span>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {new Date(post.created_at).toLocaleDateString()}
-                  </div>
+          <div className="flex-1">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <Avatar className="w-5 h-5">
+                    <AvatarFallback className="text-[10px]">U</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">
+                    Anonymous User
+                    {post.profiles?.batch_year
+                      ? ` • Batch ${post.profiles.batch_year}`
+                      : ""}
+                  </span>
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  {post.title}
-                </h1>
+                <span>&bull;</span>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {new Date(post.created_at).toLocaleDateString()}
+                </div>
               </div>
-              <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
-                {post.content}
-              </div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {post.title}
+              </h1>
+            </div>
+            <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap mt-4">
+              {post.content}
             </div>
           </div>
         </CardContent>
@@ -229,20 +176,8 @@ export default function PostDetail() {
             comments?.map((comment) => (
               <div
                 key={comment.id}
-                className="flex gap-3 p-4 rounded-lg bg-card border border-border/50"
+                className="p-4 rounded-lg bg-card border border-border/50"
               >
-                {/* Comment upvote */}
-                <div className="flex flex-col items-center gap-0.5 shrink-0 pt-0.5">
-                  <button
-                    type="button"
-                    onClick={() => handleUpvoteComment(comment.id)}
-                    className="p-0.5 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                  >
-                    <ArrowBigUp className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs font-semibold tabular-nums">0</span>
-                </div>
-
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex items-center gap-1.5">

@@ -43,7 +43,15 @@ export default function Community() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("questions")
-        .select("*")
+        .select(
+          `
+          *,
+          profiles!questions_author_id_fkey (
+            batch_year,
+            name
+          )
+        `,
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -58,14 +66,45 @@ export default function Community() {
   const handleUpvote = (e: React.MouseEvent, id: number) => {
     e.preventDefault();
   };
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile?.id) {
-      toast({
-        title: "Please login first",
-      });
-      return;
-    }
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!profile?.id) {
+          toast({ title: "Please login first" });
+          return;
+        }
+
+        if ((profile?.batch_year ?? 9999) > 2026) {
+          toast({
+            title: "Only 2026 and earlier batches can post",
+          });
+          return;
+        }
+
+        const { error } = await supabase
+          .from("questions")
+          .insert({
+            author_id: profile.id,
+            title,
+            content,
+            tags: [],
+            is_anon: false,
+            votes: 0,
+          });
+
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        setTitle("");
+        setContent("");
+        setOpen(false);
+
+        queryClient.invalidateQueries({
+          queryKey: ["questions"],
+        });
+      };
     if ((profile?.batch_year ?? 9999) > 2026) {
       toast({
         title: "Only 2026 and earlier batches can share experiences",
@@ -245,7 +284,12 @@ export default function Community() {
                               U
                             </AvatarFallback>
                           </Avatar>
-                          <span>at Anonymous User</span>
+                          <span>
+                            Anonymous User
+                            {post.profiles?.batch_year
+                              ? ` • Batch ${post.profiles.batch_year}`
+                              : ""}
+                          </span>
                         </div>
                         <span>&bull;</span>
                         <span>

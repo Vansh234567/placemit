@@ -23,14 +23,26 @@ export default function PostDetail() {
   const { profile } = useAuth();
   const [commentContent, setCommentContent] = useState("");
 
-  const { data: post, isLoading: postLoading } = useQuery({
-    queryKey: ["question", postId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("questions")
-        .select("*")
-        .eq("id", postId)
-        .single();
+      const { data: post, isLoading: postLoading } = useQuery({
+        queryKey: ["question", postId],
+        queryFn: async () => {
+          const { data, error } = await supabase
+            .from("questions")
+            .select(`
+              *,
+              profiles!questions_author_id_fkey (
+                batch_year,
+                name
+              )
+            `)
+            .eq("id", postId)
+            .single();
+
+          if (error) throw error;
+          return data;
+        },
+        enabled: !!postId,
+      });
 
       if (error) throw error;
 
@@ -86,8 +98,8 @@ export default function PostDetail() {
 
     setCommentContent("");
 
-    queryClient.invalidateQueries({
-      queryKey: ["answers", postId],
+    await queryClient.invalidateQueries({
+      queryKey: ["question", postId],
     });
 
     toast({
@@ -96,6 +108,7 @@ export default function PostDetail() {
   };
 
   const handleUpvotePost = async () => {
+    
     if (!profile?.id) return;
 
     const { error } = await supabase.from("question_votes").insert({
@@ -117,11 +130,13 @@ export default function PostDetail() {
       })
       .eq("id", postId);
 
-    queryClient.invalidateQueries({
+    await queryClient.invalidateQueries({
       queryKey: ["question", postId],
     });
   };
-
+const handleUpvoteComment = (commentId: number) => {
+  console.log("Comment upvote pending:", commentId);
+};
   if (postLoading) {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -169,7 +184,12 @@ export default function PostDetail() {
                     <Avatar className="w-5 h-5">
                       <AvatarFallback className="text-[10px]">U</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">Anonymous User</span>
+                    <span className="font-medium">
+                      Anonymous User
+                      {post.profiles?.batch_year
+                        ? ` • Batch ${post.profiles.batch_year}`
+                        : ""}
+                    </span>
                   </div>
                   <span>&bull;</span>
                   <div className="flex items-center gap-1">

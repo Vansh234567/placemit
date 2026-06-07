@@ -65,10 +65,6 @@ export default function PostDetail() {
 
   const handleComment = async () => {
     if (!profile?.id) return;
-    if ((profile?.batch_year ?? 9999) > 2026) {
-      toast({ title: "Only 2026 and earlier batches can answer" });
-      return;
-    }
     if (!commentContent.trim()) return;
 
     const { error } = await supabase.from("answers").insert({
@@ -84,9 +80,7 @@ export default function PostDetail() {
     }
 
     setCommentContent("");
-
     await queryClient.invalidateQueries({ queryKey: ["answers", postId] });
-
     toast({ title: "Answer posted" });
   };
 
@@ -103,10 +97,14 @@ export default function PostDetail() {
       return;
     }
 
-    await supabase
+    const { error: updateError } = await supabase
       .from("questions")
-      .update({ votes: Number(post?.votes ?? 0) + 1 })
+      .update({
+        votes: Number(post?.votes ?? 0) + 1,
+      })
       .eq("id", postId);
+
+    console.log("updateError", updateError);
 
     await queryClient.invalidateQueries({ queryKey: ["question", postId] });
   };
@@ -160,14 +158,10 @@ export default function PostDetail() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-[10px]">
-                        {post.is_anon ? "A" : (post.profiles?.name?.[0] ?? "U")}
-                      </AvatarFallback>
+                      <AvatarFallback className="text-[10px]">U</AvatarFallback>
                     </Avatar>
                     <span className="font-medium">
-                      {post.is_anon
-                        ? "Anonymous"
-                        : (post.profiles?.name ?? "MIT Student")}
+                      Anonymous User
                       {post.profiles?.batch_year
                         ? ` • Batch ${post.profiles.batch_year}`
                         : ""}

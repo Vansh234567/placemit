@@ -54,7 +54,6 @@ export default function Community() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-
       return data ?? [];
     },
   });
@@ -71,18 +70,11 @@ export default function Community() {
       return;
     }
 
-    if ((profile?.batch_year ?? 9999) > 2026) {
-      toast({
-        title: "Only 2026 and earlier batches can post",
-      });
-      return;
-    }
-
     if (!title.trim() || !content.trim()) {
       return;
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("questions")
       .insert({
         author_id: profile.id,
@@ -101,13 +93,12 @@ export default function Community() {
       return;
     }
 
+    console.log("Post created:", data);
     setTitle("");
     setContent("");
     setOpen(false);
 
-    await queryClient.invalidateQueries({
-      queryKey: ["questions"],
-    });
+    await queryClient.invalidateQueries({ queryKey: ["questions"] });
 
     toast({ title: "Post created" });
   };
@@ -255,13 +246,11 @@ export default function Community() {
                           <Avatar className="w-4 h-4">
                             <AvatarImage src="" />
                             <AvatarFallback className="text-[9px]">
-                              {post.profiles?.name?.[0] ?? "U"}
+                              U
                             </AvatarFallback>
                           </Avatar>
                           <span>
-                            {post.is_anon
-                              ? "Anonymous"
-                              : (post.profiles?.name ?? "MIT Student")}
+                            Anonymous User
                             {post.profiles?.batch_year
                               ? ` • Batch ${post.profiles.batch_year}`
                               : ""}

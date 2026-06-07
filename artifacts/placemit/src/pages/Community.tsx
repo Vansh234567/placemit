@@ -71,41 +71,33 @@ export default function Community() {
     upvotePost.mutate({ id }, { onSuccess: invalidate });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-      const {
-        data,
-        error
-      } = await supabase
-        .from("questions")
-        .insert({
-          author_id: profile.id,
-          title: values.title,
-          content: values.content,
-          tags: values.tags || [],
-          is_anon: values.isAnon || false,
-          votes: 0
-        })
-        .select()
-        .single();
 
-      if (error) {
-        throw error;
-      }
-    queryClient.invalidateQueries({
-      queryKey: ["questions"]
-    });
-      {
-        onSuccess: () => {
-          toast({ title: "Post created" });
-          setOpen(false);
-          setTitle("");
-          setContent("");
-          invalidate();
-        },
-      },
-    );
+    if (!title.trim() || !content.trim()) return;
+
+    const { data, error } = await supabase
+      .from("questions")
+      .insert({
+        author_id: profile.id,
+        title: title,
+        content: content,
+        tags: [],
+        is_anon: false,
+        votes: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    console.log("Post created:", data);
+
+    setTitle("");
+    setContent("");
   };
 
   return (

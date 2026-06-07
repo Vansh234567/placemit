@@ -73,7 +73,10 @@ export default function Community() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (!profile?.id) {
+      console.error("No profile found");
+      return;
+    }
     if (!title.trim() || !content.trim()) return;
 
     const { data, error } = await supabase

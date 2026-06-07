@@ -97,13 +97,15 @@ export default function PostDetail() {
       return;
     }
 
-    const { error: updateError } = await supabase
+    const { data: updatedData, error: updateError } = await supabase
       .from("questions")
       .update({
         votes: Number(post?.votes ?? 0) + 1,
       })
-      .eq("id", postId);
+      .eq("id", postId)
+      .select();
 
+    console.log("updatedData", updatedData);
     console.log("updateError", updateError);
 
     await queryClient.invalidateQueries({ queryKey: ["question", postId] });

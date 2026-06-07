@@ -144,9 +144,7 @@ export default function Community() {
                 />
               </div>
               <div className="flex justify-end pt-2">
-                <Button type="submit" disabled={createPost.isPending}>
-                  {createPost.isPending ? "Posting..." : "Post"}
-                </Button>
+                <Button type="submit"></Button>
               </div>
             </form>
           </DialogContent>

@@ -41,7 +41,7 @@ export default function LoginPage() {
     setLoading(true);
 
     // Store pending profile so we can recover if OTP verify loses state
-    sessionStorage.setItem(
+    localStorage.setItem(
       "pending_profile",
       JSON.stringify({
         name: name.trim(),
@@ -91,7 +91,7 @@ export default function LoginPage() {
     // Create profile row if it doesn't exist yet
     if (data.user) {
       const pending = JSON.parse(
-        sessionStorage.getItem("pending_profile") || "{}",
+        localStorage.getItem("pending_profile") || "{}",
       );
 
       const { error: upsertError } = await supabase.from("profiles").upsert(

@@ -57,7 +57,7 @@ export default function LoginPage() {
     console.log("[sendOTP] sending OTP to:", email.trim());
 
     // Store profile data in sessionStorage; saved to DB after OTP verify
-    sessionStorage.setItem(
+    localStorage.setItem(
       "pending_profile",
       JSON.stringify({
         name: name.trim(),
@@ -130,7 +130,7 @@ export default function LoginPage() {
     // Profile upsert is required — failure blocks login
     if (data.user) {
       const pending = JSON.parse(
-        sessionStorage.getItem("pending_profile") || "{}",
+        localStorage.getItem("pending_profile") || "{}",
       );
       console.log("[verifyOTP] upserting profile:", {
         id: data.user.id,

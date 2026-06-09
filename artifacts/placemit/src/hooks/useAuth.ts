@@ -50,7 +50,7 @@ export function useAuthState(): AuthState {
 
   async function attemptProfileRecovery(userId: string): Promise<boolean> {
     console.log("[useAuth] profile recovery attempt for uid:", userId);
-    const raw = sessionStorage.getItem("pending_profile");
+    const raw = localStorage.getItem("pending_profile");
     if (!raw) {
       console.warn(
         "[useAuth] no pending_profile in sessionStorage — cannot self-heal",

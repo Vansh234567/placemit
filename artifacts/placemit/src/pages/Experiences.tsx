@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listExperiences, createExperience, type Experience } from "@/lib/supabase-experiences";
+import {
+  listExperiences,
+  createExperience,
+  type Experience,
+} from "@/lib/supabase-experiences";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,8 +40,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { BRANCHES } from "@/lib/supabase";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-
 type FormState = {
   companyName: string;
   role: string;
@@ -66,8 +68,6 @@ const EMPTY_FORM: FormState = {
   rounds: "3",
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
-
 export default function Experiences() {
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -75,7 +75,9 @@ export default function Experiences() {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [searchTimer, setSearchTimer] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
@@ -87,8 +89,6 @@ export default function Experiences() {
     queryFn: () => listExperiences(debouncedSearch || undefined),
   });
 
-  // createExperience imported directly from supabase-experiences
-
   function handleSearchChange(val: string) {
     setSearch(val);
     if (searchTimer) clearTimeout(searchTimer);
@@ -96,14 +96,14 @@ export default function Experiences() {
   }
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm(prev => ({ ...prev, [key]: value }));
+    setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   function toggleBranch(branch: string) {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       eligibleBranches: prev.eligibleBranches.includes(branch)
-        ? prev.eligibleBranches.filter(b => b !== branch)
+        ? prev.eligibleBranches.filter((b) => b !== branch)
         : [...prev.eligibleBranches, branch],
     }));
   }
@@ -112,14 +112,29 @@ export default function Experiences() {
     e.preventDefault();
     if (!profile) return;
 
-    if (!form.companyName.trim() || !form.role.trim() || !form.interviewProcess.trim()) {
-      toast({ title: "Missing fields", description: "Company, role and interview process are required.", variant: "destructive" });
+    if (
+      !form.companyName.trim() ||
+      !form.role.trim() ||
+      !form.interviewProcess.trim()
+    ) {
+      toast({
+        title: "Missing fields",
+        description: "Company, role and interview process are required.",
+        variant: "destructive",
+      });
       return;
     }
 
     const cgpaNum = form.cgpa.trim() ? parseFloat(form.cgpa) : undefined;
-    if (form.cgpa.trim() && (isNaN(cgpaNum!) || cgpaNum! < 0 || cgpaNum! > 10)) {
-      toast({ title: "Invalid CGPA", description: "CGPA must be between 0 and 10.", variant: "destructive" });
+    if (
+      form.cgpa.trim() &&
+      (isNaN(cgpaNum!) || cgpaNum! < 0 || cgpaNum! > 10)
+    ) {
+      toast({
+        title: "Invalid CGPA",
+        description: "CGPA must be between 0 and 10.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -133,7 +148,8 @@ export default function Experiences() {
         packageOffered: form.packageOffered.trim() || undefined,
         cgpa: cgpaNum,
         cgpaCriteria: form.cgpaCriteria.trim() || undefined,
-        eligibleBranches: form.eligibleBranches.length > 0 ? form.eligibleBranches : undefined,
+        eligibleBranches:
+          form.eligibleBranches.length > 0 ? form.eligibleBranches : undefined,
         oaQuestions: form.oaQuestions.trim() || undefined,
         interviewProcess: form.interviewProcess.trim() || undefined,
         resourcesUsed: form.resourcesUsed.trim() || undefined,
@@ -141,138 +157,162 @@ export default function Experiences() {
       });
 
       await queryClient.invalidateQueries({ queryKey: ["experiences"] });
-      toast({ title: "Experience shared!", description: "Thanks for helping your juniors." });
+      toast({
+        title: "Experience shared!",
+        description: "Thanks for helping your juniors.",
+      });
       setForm(EMPTY_FORM);
       setDialogOpen(false);
     } catch (err) {
       console.error("[submit experience]", err);
-      toast({ title: "Submission failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+      toast({
+        title: "Submission failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 w-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Interview Experiences</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+            Interview Experiences
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Real accounts from MIT Manipal students — OT rounds, interview process, tips.
+            Real accounts from MIT Manipal students — OT rounds, interview
+            process, tips.
           </p>
         </div>
 
         {isSenior ? (
-          <Button onClick={() => setDialogOpen(true)} className="shrink-0 gap-2">
+          <Button
+            onClick={() => setDialogOpen(true)}
+            className="w-full sm:w-auto shrink-0 gap-2"
+          >
             <PlusCircle className="w-4 h-4" />
             Share Experience
           </Button>
         ) : (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground border border-dashed rounded-md px-3 py-2">
-            <Lock className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground border border-dashed rounded-md px-3 py-2 w-full sm:w-auto">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
             Only 4th-year students can submit
           </div>
         )}
       </div>
 
       {/* Search */}
-      <div className="relative">
+      <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          className="pl-9"
+          className="pl-9 w-full"
           placeholder="Search by company or role…"
           value={search}
-          onChange={e => handleSearchChange(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
       </div>
 
       {/* List */}
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         {isLoading ? (
-          [1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)
+          [1, 2, 3].map((i) => <Skeleton key={i} className="h-40 w-full" />)
         ) : experiences?.length === 0 ? (
-          <div className="text-center py-16 border-2 border-dashed rounded-lg space-y-2">
+          <div className="text-center py-12 border-2 border-dashed rounded-lg space-y-2 px-4">
             {debouncedSearch ? (
               <>
-                <p className="text-base font-medium text-foreground">No experiences found for "{debouncedSearch}"</p>
-                <p className="text-sm text-muted-foreground">Try a different company or role name.</p>
+                <p className="text-base font-medium text-foreground break-words">
+                  No experiences found for "{debouncedSearch}"
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Try a different company or role name.
+                </p>
               </>
             ) : (
               <>
-                <p className="text-base font-medium text-foreground">No experiences shared yet.</p>
-                <p className="text-sm text-muted-foreground">Be the first senior to share an experience.</p>
+                <p className="text-base font-medium text-foreground">
+                  No experiences shared yet.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Be the first senior to share an experience.
+                </p>
               </>
             )}
           </div>
         ) : (
-          experiences?.map(exp => <ExperienceCard key={exp.id} exp={exp} />)
+          experiences?.map((exp) => <ExperienceCard key={exp.id} exp={exp} />)
         )}
       </div>
 
-      {/* Submission Dialog */}
+      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl">
           <DialogHeader>
             <DialogTitle>Share Your Interview Experience</DialogTitle>
             <DialogDescription>
-              Help your juniors prepare. Company, role and interview process are required.
+              Help your juniors prepare. Company, role and interview process are
+              required.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-6 mt-2">
-
-            {/* ── Basic info ───────────────────────────────────────── */}
+            {/* Basic info */}
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="company">Company <span className="text-destructive">*</span></Label>
+                  <Label htmlFor="company">
+                    Company <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="company"
                     placeholder="e.g. Google"
                     value={form.companyName}
-                    onChange={e => setField("companyName", e.target.value)}
+                    onChange={(e) => setField("companyName", e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="role">Role <span className="text-destructive">*</span></Label>
+                  <Label htmlFor="role">
+                    Role <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="role"
                     placeholder="e.g. Software Engineer"
                     value={form.role}
-                    onChange={e => setField("role", e.target.value)}
+                    onChange={(e) => setField("role", e.target.value)}
                     required
                   />
                 </div>
               </div>
-
               <div className="space-y-1.5">
                 <Label htmlFor="package">Package</Label>
                 <Input
                   id="package"
                   placeholder="e.g. 45 LPA"
                   value={form.packageOffered}
-                  onChange={e => setField("packageOffered", e.target.value)}
+                  onChange={(e) => setField("packageOffered", e.target.value)}
                 />
               </div>
             </div>
 
-            {/* ── 1. Eligibility ───────────────────────────────────── */}
+            {/* Eligibility */}
             <div className="space-y-3">
               <FormSectionHeader number={1} title="Eligibility" />
-
               <div className="space-y-1.5">
                 <Label htmlFor="cgpaCriteria">CGPA Criteria</Label>
                 <Input
                   id="cgpaCriteria"
                   placeholder="e.g. 7.0 and above, No backlog, Open to all"
                   value={form.cgpaCriteria}
-                  onChange={e => setField("cgpaCriteria", e.target.value)}
+                  onChange={(e) => setField("cgpaCriteria", e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">The minimum CGPA cutoff announced by the company</p>
+                <p className="text-xs text-muted-foreground">
+                  The minimum CGPA cutoff announced by the company
+                </p>
               </div>
-
               <div className="space-y-2">
                 <Label>
                   Branches Allowed
@@ -282,15 +322,18 @@ export default function Experiences() {
                     </span>
                   )}
                 </Label>
-                <div className="border rounded-md p-3 max-h-44 overflow-y-auto grid grid-cols-1 gap-2">
-                  {BRANCHES.map(branch => (
+                <div className="border rounded-md p-3 max-h-40 overflow-y-auto grid grid-cols-1 gap-2">
+                  {BRANCHES.map((branch) => (
                     <div key={branch} className="flex items-center gap-2">
                       <Checkbox
                         id={`branch-${branch}`}
                         checked={form.eligibleBranches.includes(branch)}
                         onCheckedChange={() => toggleBranch(branch)}
                       />
-                      <label htmlFor={`branch-${branch}`} className="text-sm cursor-pointer leading-tight">
+                      <label
+                        htmlFor={`branch-${branch}`}
+                        className="text-sm cursor-pointer leading-tight"
+                      >
                         {branch}
                       </label>
                     </div>
@@ -308,7 +351,7 @@ export default function Experiences() {
               </div>
             </div>
 
-            {/* ── 2. OT ────────────────────────────────────────────── */}
+            {/* OT */}
             <div className="space-y-3">
               <FormSectionHeader number={2} title="OT" />
               <div className="space-y-1.5">
@@ -318,12 +361,12 @@ export default function Experiences() {
                   rows={3}
                   placeholder="Describe the online test — format, question types, difficulty, topics covered…"
                   value={form.oaQuestions}
-                  onChange={e => setField("oaQuestions", e.target.value)}
+                  onChange={(e) => setField("oaQuestions", e.target.value)}
                 />
               </div>
             </div>
 
-            {/* ── 3. Interview Process ─────────────────────────────── */}
+            {/* Interview Process */}
             <div className="space-y-3">
               <FormSectionHeader number={3} title="Interview Process" />
               <div className="space-y-1.5">
@@ -334,7 +377,7 @@ export default function Experiences() {
                   min="1"
                   max="10"
                   value={form.rounds}
-                  onChange={e => setField("rounds", e.target.value)}
+                  onChange={(e) => setField("rounds", e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
@@ -343,42 +386,51 @@ export default function Experiences() {
                 </Label>
                 <Textarea
                   id="process"
-                  rows={5}
+                  rows={4}
                   placeholder="Walk through each round — what was asked, what they looked for, how long each round lasted…"
                   value={form.interviewProcess}
-                  onChange={e => setField("interviewProcess", e.target.value)}
+                  onChange={(e) => setField("interviewProcess", e.target.value)}
                   required
                 />
               </div>
             </div>
 
-            {/* ── 4. Resources Used ────────────────────────────────── */}
+            {/* Resources */}
             <div className="space-y-3">
               <FormSectionHeader number={4} title="Resources Used" />
               <Textarea
                 rows={2}
                 placeholder="Books, courses, YouTube channels, LeetCode lists, mock interview tools…"
                 value={form.resourcesUsed}
-                onChange={e => setField("resourcesUsed", e.target.value)}
+                onChange={(e) => setField("resourcesUsed", e.target.value)}
               />
             </div>
 
-            {/* ── 5. Tips for Juniors ──────────────────────────────── */}
+            {/* Tips */}
             <div className="space-y-3">
               <FormSectionHeader number={5} title="Tips for Juniors" />
               <Textarea
                 rows={3}
                 placeholder="What would you do differently? What gave you an edge? What tripped you up?"
                 value={form.tips}
-                onChange={e => setField("tips", e.target.value)}
+                onChange={(e) => setField("tips", e.target.value)}
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-2 border-t">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submitting}>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full sm:w-auto"
+              >
                 {submitting ? "Submitting…" : "Submit Experience"}
               </Button>
             </div>
@@ -389,47 +441,56 @@ export default function Experiences() {
   );
 }
 
-// ── Experience Card ───────────────────────────────────────────────────────────
-
 function ExperienceCard({ exp }: { exp: Experience }) {
   const [expanded, setExpanded] = useState(false);
-
   const processText = exp.interviewProcess || exp.description;
   const hasBranches = exp.eligibleBranches && exp.eligibleBranches.length > 0;
   const hasExtra = !!(exp.resourcesUsed || exp.tips);
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden w-full">
       {/* Header row */}
-      <div className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="px-4 sm:px-5 py-3 sm:py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
             {exp.studentName.charAt(0)}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm leading-none">{exp.studentName}</p>
+            <p className="font-semibold text-sm leading-none truncate">
+              {exp.studentName}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {new Date(exp.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {new Date(exp.createdAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-sm">
           <span className="flex items-center gap-1.5 font-medium">
-            <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-            {exp.companyName}
+            <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="truncate max-w-[120px] sm:max-w-none">
+              {exp.companyName}
+            </span>
           </span>
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
           <span className="flex items-center gap-1.5 text-muted-foreground">
-            <Briefcase className="w-3.5 h-3.5" />
-            {exp.role}
+            <Briefcase className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate max-w-[100px] sm:max-w-none">
+              {exp.role}
+            </span>
           </span>
         </div>
       </div>
 
       {/* Meta row */}
-      <div className="px-5 py-3 flex flex-wrap items-center gap-2 border-b bg-muted/20">
-        <Badge variant="outline" className="text-xs">{exp.rounds} Rounds</Badge>
+      <div className="px-4 sm:px-5 py-2.5 sm:py-3 flex flex-wrap items-center gap-2 border-b bg-muted/20">
+        <Badge variant="outline" className="text-xs">
+          {exp.rounds} Rounds
+        </Badge>
         {exp.cgpa != null && (
           <Badge variant="outline" className="text-xs gap-1">
             <Star className="w-3 h-3" />
@@ -444,29 +505,37 @@ function ExperienceCard({ exp }: { exp: Experience }) {
         )}
       </div>
 
-      {/* CGPA Criteria — prominent banner */}
+      {/* CGPA criteria */}
       {exp.cgpaCriteria && (
-        <div className="px-5 py-2.5 flex items-center gap-2 border-b bg-amber-500/5 border-amber-500/20">
-          <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
-          <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+        <div className="px-4 sm:px-5 py-2.5 flex items-start gap-2 border-b bg-amber-500/5 border-amber-500/20">
+          <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+          <span className="text-sm font-medium text-amber-600 dark:text-amber-400 shrink-0">
             CGPA Criteria:
           </span>
-          <span className="text-sm text-foreground/90">{exp.cgpaCriteria}</span>
+          <span className="text-sm text-foreground/90 break-words">
+            {exp.cgpaCriteria}
+          </span>
         </div>
       )}
 
-      {/* Eligible Branches */}
+      {/* Eligible branches */}
       {hasBranches && (
-        <div className="px-5 py-3 border-b bg-muted/10">
+        <div className="px-4 sm:px-5 py-3 border-b bg-muted/10">
           <div className="flex items-start gap-2">
             <Users className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                 Eligible Branches
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {exp.eligibleBranches!.map(b => (
-                  <Badge key={b} variant="secondary" className="text-xs font-normal">{b}</Badge>
+                {exp.eligibleBranches!.map((b) => (
+                  <Badge
+                    key={b}
+                    variant="secondary"
+                    className="text-xs font-normal"
+                  >
+                    {b}
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -475,7 +544,7 @@ function ExperienceCard({ exp }: { exp: Experience }) {
       )}
 
       {/* Body */}
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="p-4 sm:p-5 space-y-4">
         {exp.oaQuestions && (
           <Section icon={<BookOpen className="w-4 h-4" />} title="OT Questions">
             {exp.oaQuestions}
@@ -483,7 +552,10 @@ function ExperienceCard({ exp }: { exp: Experience }) {
         )}
 
         {processText && (
-          <Section icon={<Award className="w-4 h-4" />} title="Interview Process">
+          <Section
+            icon={<Award className="w-4 h-4" />}
+            title="Interview Process"
+          >
             <Collapsible text={processText} maxLines={4} />
           </Section>
         )}
@@ -500,16 +572,25 @@ function ExperienceCard({ exp }: { exp: Experience }) {
         {expanded && (
           <>
             {exp.resourcesUsed && (
-              <Section icon={<GraduationCap className="w-4 h-4" />} title="Resources Used">
+              <Section
+                icon={<GraduationCap className="w-4 h-4" />}
+                title="Resources Used"
+              >
                 {exp.resourcesUsed}
               </Section>
             )}
             {exp.tips && (
-              <Section icon={<Lightbulb className="w-4 h-4" />} title="Tips for Juniors">
+              <Section
+                icon={<Lightbulb className="w-4 h-4" />}
+                title="Tips for Juniors"
+              >
                 {exp.tips}
               </Section>
             )}
-            <button onClick={() => setExpanded(false)} className="text-xs text-muted-foreground hover:underline">
+            <button
+              onClick={() => setExpanded(false)}
+              className="text-xs text-muted-foreground hover:underline"
+            >
               Show less
             </button>
           </>
@@ -519,7 +600,13 @@ function ExperienceCard({ exp }: { exp: Experience }) {
   );
 }
 
-function FormSectionHeader({ number, title }: { number: number; title: string }) {
+function FormSectionHeader({
+  number,
+  title,
+}: {
+  number: number;
+  title: string;
+}) {
   return (
     <div className="flex items-center gap-2.5">
       <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
@@ -531,14 +618,22 @@ function FormSectionHeader({ number, title }: { number: number; title: string })
   );
 }
 
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function Section({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-2">
         {icon}
         {title}
       </h4>
-      <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap bg-muted/30 rounded-md px-4 py-3 border border-border/40">
+      <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap break-words bg-muted/30 rounded-md px-3 sm:px-4 py-3 border border-border/40">
         {children}
       </div>
     </div>
@@ -553,10 +648,13 @@ function Collapsible({ text, maxLines }: { text: string; maxLines: number }) {
 
   return (
     <>
-      <span>{shown}{!open && needsTrunc ? "…" : ""}</span>
+      <span className="break-words">
+        {shown}
+        {!open && needsTrunc ? "…" : ""}
+      </span>
       {needsTrunc && (
         <button
-          onClick={() => setOpen(o => !o)}
+          onClick={() => setOpen((o) => !o)}
           className="block mt-1 text-xs text-primary hover:underline"
         >
           {open ? "Show less" : "Read more"}

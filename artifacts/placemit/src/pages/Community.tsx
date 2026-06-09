@@ -88,16 +88,17 @@ export default function Community() {
     setOpen(false);
 
     await queryClient.invalidateQueries({ queryKey: ["questions"] });
-
     toast({ title: "Post created" });
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 w-full">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Community</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+            Community
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Ask questions, share tips, help each other.
           </p>
@@ -105,12 +106,12 @@ export default function Community() {
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-1.5">
+            <Button size="sm" className="w-full sm:w-auto gap-1.5">
               <Plus className="w-4 h-4" />
               New Post
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[560px]">
+          <DialogContent className="w-[95vw] max-w-lg rounded-xl">
             <DialogHeader>
               <DialogTitle>New Post</DialogTitle>
             </DialogHeader>
@@ -130,14 +131,16 @@ export default function Community() {
                 <Textarea
                   id="post-content"
                   placeholder="Share more detail..."
-                  className="min-h-[140px]"
+                  className="min-h-[120px]"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   required
                 />
               </div>
               <div className="flex justify-end pt-2">
-                <Button type="submit">Submit Post</Button>
+                <Button type="submit" className="w-full sm:w-auto">
+                  Submit Post
+                </Button>
               </div>
             </form>
           </DialogContent>
@@ -145,17 +148,17 @@ export default function Community() {
       </div>
 
       {/* Search + Sort */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            className="pl-9"
+            className="pl-9 w-full"
             placeholder="Search posts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex border rounded-md overflow-hidden shrink-0">
+        <div className="flex border rounded-md overflow-hidden shrink-0 self-start">
           <button
             type="button"
             onClick={() => setSort("newest")}
@@ -186,9 +189,9 @@ export default function Community() {
       {/* List */}
       <div className="space-y-3">
         {postsLoading ? (
-          [1, 2, 3].map((i) => <Skeleton key={i} className="h-28 w-full" />)
+          [1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)
         ) : posts?.length === 0 ? (
-          <div className="text-center py-16 border-2 border-dashed rounded-lg space-y-2">
+          <div className="text-center py-12 border-2 border-dashed rounded-lg space-y-2 px-4">
             <p className="text-base font-medium text-foreground">
               {search ? `No posts matching "${search}"` : "No posts yet."}
             </p>
@@ -205,16 +208,16 @@ export default function Community() {
               href={`/community/${post.id}`}
               className="block"
             >
-              <Card className="hover:border-primary/40 transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <p className="font-semibold text-sm leading-snug line-clamp-2">
+              <Card className="hover:border-primary/40 transition-colors w-full overflow-hidden">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="min-w-0 space-y-1.5">
+                    <p className="font-semibold text-sm leading-snug line-clamp-2 break-words">
                       {post.title}
                     </p>
-                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed break-words">
                       {post.content}
                     </p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground pt-0.5">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground pt-0.5">
                       <div className="flex items-center gap-1">
                         <Avatar className="w-4 h-4">
                           <AvatarImage src="" />
@@ -222,19 +225,18 @@ export default function Community() {
                             U
                           </AvatarFallback>
                         </Avatar>
-                        <span>
+                        <span className="truncate max-w-[120px]">
                           Anonymous User
                           {post.profiles?.batch_year
-                            ? ` • Batch ${post.profiles.batch_year}`
+                            ? ` • ${post.profiles.batch_year}`
                             : ""}
                         </span>
                       </div>
-                      <span>&bull;</span>
+                      <span className="hidden sm:inline">&bull;</span>
                       <span>
                         {new Date(post.created_at).toLocaleDateString()}
                       </span>
-                      <span>&bull;</span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1 ml-auto">
                         <MessageSquare className="w-3 h-3" />0
                       </span>
                     </div>

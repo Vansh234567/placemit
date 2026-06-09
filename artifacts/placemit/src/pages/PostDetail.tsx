@@ -80,18 +80,22 @@ export default function PostDetail() {
 
   if (postLoading) {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <Skeleton className="h-64 w-full" />
+      <div className="space-y-4 w-full">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-32 w-full" />
       </div>
     );
   }
 
   if (!post) {
-    return <div>Post not found</div>;
+    return (
+      <div className="p-4 text-sm text-muted-foreground">Post not found</div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="w-full space-y-6">
+      {/* Back link */}
       <Link
         href="/community"
         className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -100,54 +104,55 @@ export default function PostDetail() {
         Back to Community
       </Link>
 
-      {/* Post */}
-      <Card>
-        <CardContent className="p-6 md:p-8">
-          <div className="flex-1">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                <div className="flex items-center gap-1.5">
-                  <Avatar className="w-5 h-5">
-                    <AvatarFallback className="text-[10px]">U</AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium">
-                    Anonymous User
-                    {post.profiles?.batch_year
-                      ? ` • Batch ${post.profiles.batch_year}`
-                      : ""}
-                  </span>
-                </div>
-                <span>&bull;</span>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {new Date(post.created_at).toLocaleDateString()}
-                </div>
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {post.title}
-              </h1>
+      {/* Post card */}
+      <Card className="w-full overflow-hidden">
+        <CardContent className="p-4 sm:p-6 md:p-8">
+          {/* Meta */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mb-3">
+            <div className="flex items-center gap-1.5">
+              <Avatar className="w-5 h-5">
+                <AvatarFallback className="text-[10px]">U</AvatarFallback>
+              </Avatar>
+              <span className="font-medium">
+                Anonymous User
+                {post.profiles?.batch_year
+                  ? ` • Batch ${post.profiles.batch_year}`
+                  : ""}
+              </span>
             </div>
-            <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap mt-4">
-              {post.content}
+            <span>&bull;</span>
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {new Date(post.created_at).toLocaleDateString()}
             </div>
           </div>
+
+          {/* Title */}
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight break-words mb-3">
+            {post.title}
+          </h1>
+
+          {/* Content */}
+          <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
+            {post.content}
+          </p>
         </CardContent>
       </Card>
 
-      {/* Comments */}
-      <div className="space-y-5">
+      {/* Answers section */}
+      <div className="space-y-4">
         <h3 className="text-base font-semibold flex items-center gap-2">
           <MessageSquare className="w-4 h-4 text-muted-foreground" />
           {comments?.length ?? 0}{" "}
           {(comments?.length ?? 0) === 1 ? "Answer" : "Answers"}
         </h3>
 
-        {/* Add comment */}
-        <Card className="bg-muted/20 border-border/50 shadow-none">
-          <CardContent className="p-4 space-y-3">
+        {/* Answer input */}
+        <Card className="bg-muted/20 border-border/50 shadow-none w-full overflow-hidden">
+          <CardContent className="p-3 sm:p-4 space-y-3">
             <Textarea
               placeholder="Write an answer..."
-              className="min-h-[90px] resize-y bg-background"
+              className="min-h-[80px] sm:min-h-[90px] resize-y bg-background w-full"
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
             />
@@ -156,6 +161,7 @@ export default function PostDetail() {
                 size="sm"
                 onClick={handleComment}
                 disabled={!commentContent.trim()}
+                className="w-full sm:w-auto"
               >
                 <Send className="w-3.5 h-3.5 mr-1.5" />
                 Post Answer
@@ -164,7 +170,7 @@ export default function PostDetail() {
           </CardContent>
         </Card>
 
-        {/* Comment list */}
+        {/* Answer list */}
         <div className="space-y-3">
           {commentsLoading ? (
             [1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full" />)
@@ -176,10 +182,10 @@ export default function PostDetail() {
             comments?.map((comment) => (
               <div
                 key={comment.id}
-                className="p-4 rounded-lg bg-card border border-border/50"
+                className="p-3 sm:p-4 rounded-lg bg-card border border-border/50 w-full overflow-hidden"
               >
-                <div className="flex-1 space-y-1.5">
-                  <div className="flex items-baseline justify-between gap-2">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <Avatar className="w-5 h-5">
                         <AvatarImage src="" />
@@ -193,7 +199,7 @@ export default function PostDetail() {
                       {new Date(comment.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed break-words">
                     {comment.content}
                   </p>
                 </div>

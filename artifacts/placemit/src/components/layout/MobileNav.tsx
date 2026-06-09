@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Award, MessageSquare, Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Award,
+  MessageSquare,
+  Menu,
+  X,
+  LogOut,
+} from "lucide-react";import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 const navigation = [
@@ -99,31 +104,34 @@ export function MobileNav() {
         </nav>
 
         {/* User footer */}
-        <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs shrink-0">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
-                {profile?.name ?? "Student"}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {profile?.branch ?? ""}
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                logout();
-                setOpen(false);
-              }}
-              className="text-xs text-muted-foreground hover:text-sidebar-foreground transition-colors shrink-0"
-            >
-              Out
-            </button>
-          </div>
-        </div>
+        {/* User footer */}
+<div className="p-4 border-t border-sidebar-border">
+  <div className="space-y-3">
+    <div className="flex items-center gap-3">
+      <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
+        {initials}
       </div>
-    </>
-  );
-}
+
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-sidebar-foreground truncate">
+          {profile?.name ?? "Student"}
+        </p>
+
+        <p className="text-xs text-muted-foreground truncate">
+          {profile?.branch ?? ""}
+        </p>
+      </div>
+    </div>
+
+    <button
+      onClick={() => {
+        logout();
+        setOpen(false);
+      }}
+      className="w-full flex items-center justify-center gap-2 rounded-md bg-red-500/10 border border-red-500/20 px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors"
+    >
+      <LogOut className="h-4 w-4" />
+      Sign Out
+    </button>
+  </div>
+</div>

@@ -109,7 +109,7 @@ export default function LoginPage() {
       if (upsertError) {
         console.error("[Login] profile upsert error:", upsertError);
       } else {
-        sessionStorage.removeItem("pending_profile");
+        localStorage.removeItem("pending_profile");
         console.log("[Login] profile upserted successfully");
       }
     }

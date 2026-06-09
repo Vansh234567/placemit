@@ -13,7 +13,7 @@ authentication method. Only `@learner.manipal.edu` email addresses are accepted.
 User → enters email + name + branch + year
      → clicks "Send Verification Code"
      → sendOTP() validates domain (@learner.manipal.edu)
-     → stores profile fields in sessionStorage["pending_profile"]
+     → stores profile fields in localStorage["pending_profile"]
      → calls supabase.auth.signInWithOtp({ email, shouldCreateUser: true })
      → Supabase sends 6-digit code to inbox
      → 60-second resend cooldown starts
@@ -30,7 +30,7 @@ User → enters 6-digit code
      → verifyOTP() calls supabase.auth.verifyOtp({ email, token, type: "email" })
      → On success: Supabase sets JWT session on the client
      → Profile row is upserted into `profiles` table
-     → sessionStorage["pending_profile"] is cleared
+     → localStorage["pending_profile"] is cleared
      → AuthGate in App.tsx detects session change via onAuthStateChange
      → LoginPage unmounts; Router renders (user lands on Dashboard)
 ```

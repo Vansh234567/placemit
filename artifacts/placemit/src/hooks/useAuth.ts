@@ -53,7 +53,7 @@ export function useAuthState(): AuthState {
     const raw = localStorage.getItem("pending_profile");
     if (!raw) {
       console.warn(
-        "[useAuth] no pending_profile in sessionStorage — cannot self-heal",
+        "[useAuth] no pending_profile in localStorage — cannot self-heal",
       );
       return false;
     }
@@ -85,7 +85,7 @@ export function useAuthState(): AuthState {
         );
         return false;
       }
-      sessionStorage.removeItem("pending_profile");
+      localStorage.removeItem("pending_profile");
       console.log("[useAuth] profile recovery upsert succeeded");
       return true;
     } catch (e) {

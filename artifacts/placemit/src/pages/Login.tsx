@@ -1,22 +1,35 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase, ALLOWED_DOMAIN, BRANCHES, YEARS } from "@/lib/supabase";
+import { supabase, ALLOWED_DOMAIN, BRANCHES } from "@/lib/supabase";
 
 type Step = "details" | "otp";
 
 const RESEND_COOLDOWN_SECONDS = 60;
+
+const BATCH_YEARS = [
+  { value: "2020", label: "2020 Batch" },
+  { value: "2021", label: "2021 Batch" },
+  { value: "2022", label: "2022 Batch" },
+  { value: "2023", label: "2023 Batch" },
+  { value: "2024", label: "2024 Batch" },
+  { value: "2025", label: "2025 Batch" },
+  { value: "2026", label: "2026 Batch" },
+  { value: "2027", label: "2027 Batch" },
+  { value: "2028", label: "2028 Batch" },
+  { value: "2029", label: "2029 Batch" },
+  { value: "2030", label: "2030 Batch" },
+];
 
 export default function LoginPage() {
   const [step, setStep] = useState<Step>("details");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [branch, setBranch] = useState("");
-  const [year, setYear] = useState("");
+  const [batchYear, setBatchYear] = useState("");
   const [rollNo, setRollNo] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Resend cooldown
   const [cooldown, setCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -47,8 +60,16 @@ export default function LoginPage() {
       setError(`Only @${ALLOWED_DOMAIN} emails are allowed`);
       return;
     }
-    if (!name.trim() || !branch || !year) {
-      setError("Please fill in all fields");
+    if (!name.trim()) {
+      setError("Please enter your full name");
+      return;
+    }
+    if (!branch) {
+      setError("Please select your branch");
+      return;
+    }
+    if (!batchYear) {
+      setError("Please select your batch year");
       return;
     }
     if (cooldown > 0) return;
@@ -56,15 +77,17 @@ export default function LoginPage() {
     setLoading(true);
     console.log("[sendOTP] sending OTP to:", email.trim());
 
-    localStorage.setItem(
-      "pending_profile",
-      JSON.stringify({
-        name: name.trim(),
-        branch,
-        batch: Number(batchYear),
-        roll_no: rollNo.trim(),
-      }),
-    );
+    const pendingProfile = {
+      name: name.trim(),
+      email: email.trim(),
+      branch,
+      batch_year: Number(batchYear),
+      roll_no: rollNo.trim() || null,
+    };
+
+    console.log("[sendOTP] saving pending_profile:", pendingProfile);
+    localStorage.setItem("pending_profile", JSON.stringify(pendingProfile));
+
     const { error: err } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: true },
@@ -113,36 +136,43 @@ export default function LoginPage() {
     }
 
     if (!data.session) {
-      console.error(
-        "[verifyOTP] no session returned after successful OTP verify",
-      );
+      console.error("[verifyOTP] no session returned after successful OTP verify");
       setLoading(false);
-      setError(
-        "Authentication failed — no session returned. Please try again.",
-      );
+      setError("Authentication failed — no session returned. Please try again.");
       return;
     }
 
     console.log("[verifyOTP] OTP verification success — uid:", data.user?.id);
 
-    // Profile upsert is required — failure blocks login
     if (data.user) {
-      const pending = JSON.parse(
-        localStorage.getItem("pending_profile") || "{}",
-      );
+      const rawPending = localStorage.getItem("pending_profile");
+      const pending = rawPending ? JSON.parse(rawPending) : {};
+
+      const profileName = pending.name ?? name.trim();
+      const profileEmail = data.user.email ?? email.trim();
+      const profileBranch = pending.branch ?? branch;
+      const profileBatchYear = pending.batch_year ?? Number(batchYear);
+      const profileRollNo = pending.roll_no ?? rollNo.trim() ?? null;
+
+      console.log("[verifyOTP] pending_profile contents:", pending);
+      console.log("[verifyOTP] batch_year value:", profileBatchYear);
       console.log("[verifyOTP] upserting profile:", {
         id: data.user.id,
-        ...pending,
+        name: profileName,
+        email: profileEmail,
+        branch: profileBranch,
+        batch_year: profileBatchYear,
+        roll_no: profileRollNo,
       });
 
       const { error: upsertError } = await supabase.from("profiles").upsert(
         {
-          id: user.id,
-          name,
-          email,
-          branch,
-          year,
-          batch_year,
+          id: data.user.id,
+          name: profileName,
+          email: profileEmail,
+          branch: profileBranch,
+          batch_year: profileBatchYear,
+          roll_no: profileRollNo,
         },
         { onConflict: "id", ignoreDuplicates: true },
       );
@@ -155,9 +185,6 @@ export default function LoginPage() {
           upsertError,
         );
         await supabase.auth.signOut();
-        console.log(
-          "[verifyOTP] forced sign out due to profile upsert failure",
-        );
         setLoading(false);
         setError("Account setup failed. Please try signing in again.");
         return;
@@ -168,10 +195,7 @@ export default function LoginPage() {
     }
 
     setLoading(false);
-    console.log(
-      "[verifyOTP] auth complete — session active, AuthGate will redirect",
-    );
-    // AuthGate in App.tsx listens to onAuthStateChange and unmounts LoginPage automatically
+    console.log("[verifyOTP] auth complete — session active, AuthGate will redirect");
   }
 
   function handleBackToDetails() {
@@ -221,48 +245,28 @@ export default function LoginPage() {
               onChange={(e) => setRollNo(e.target.value)}
             />
             <select
-              style={{
-                ...styles.input,
-                backgroundColor: "#161a20",
-                color: "#f0f2f5",
-              }}
+              style={{ ...styles.input, backgroundColor: "#161a20", color: "#f0f2f5" }}
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
             >
-              <option
-                value=""
-                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-              >
+              <option value="" style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}>
                 Select branch
               </option>
-
               {BRANCHES.map((b) => (
-                <option
-                  key={b}
-                  value={b}
-                  style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-                >
+                <option key={b} value={b} style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}>
                   {b}
                 </option>
               ))}
             </select>
             <select
-              style={{
-                ...styles.input,
-                backgroundColor: "#161a20",
-                color: "#f0f2f5",
-              }}
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
+              style={{ ...styles.input, backgroundColor: "#161a20", color: "#f0f2f5" }}
+              value={batchYear}
+              onChange={(e) => setBatchYear(e.target.value)}
             >
-              <option
-                value=""
-                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-              >
-                Select batch
+              <option value="" style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}>
+                Select batch year
               </option>
-
-              {YEARS.map((y) => (
+              {BATCH_YEARS.map((y) => (
                 <option
                   key={y.value}
                   value={y.value}
@@ -295,23 +299,11 @@ export default function LoginPage() {
           </>
         ) : (
           <>
-            <p
-              style={{
-                color: "#8a8f9a",
-                fontSize: 14,
-                marginBottom: 16,
-                textAlign: "center",
-              }}
-            >
+            <p style={{ color: "#8a8f9a", fontSize: 14, marginBottom: 16, textAlign: "center" }}>
               Code sent to <strong style={{ color: "#7ca4ff" }}>{email}</strong>
             </p>
             <input
-              style={{
-                ...styles.input,
-                fontSize: 24,
-                letterSpacing: 10,
-                textAlign: "center",
-              }}
+              style={{ ...styles.input, fontSize: 24, letterSpacing: 10, textAlign: "center" }}
               type="text"
               inputMode="numeric"
               placeholder="000000"

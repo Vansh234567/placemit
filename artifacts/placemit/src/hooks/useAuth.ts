@@ -1,5 +1,6 @@
+// artifacts/placemit/src/hooks/useAuth.ts
 import { useEffect, useState, createContext, useContext } from "react";
-import { supabase, type Profile } from "@/lib/supabase";
+import { supabase, safeStorage, type Profile } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 
 export type AuthState = {
@@ -15,6 +16,7 @@ export function useAuthState(): AuthState {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Restore session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log(
         "[useAuth] restored session:",
@@ -28,6 +30,7 @@ export function useAuthState(): AuthState {
       }
     });
 
+    // Listen to auth state changes (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -50,10 +53,10 @@ export function useAuthState(): AuthState {
 
   async function attemptProfileRecovery(userId: string): Promise<boolean> {
     console.log("[useAuth] profile recovery attempt for uid:", userId);
-    const raw = localStorage.getItem("pending_profile");
+    const raw = safeStorage.get("pending_profile");
     if (!raw) {
       console.warn(
-        "[useAuth] no pending_profile in localStorage — cannot self-heal",
+        "[useAuth] no pending_profile in storage — cannot self-heal",
       );
       return false;
     }
@@ -62,7 +65,22 @@ export function useAuthState(): AuthState {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return false;
+      if (!user) {
+        console.warn("[useAuth] recovery: no auth user found");
+        return false;
+      }
+
+      // pending_profile saved by Login.tsx uses batch_year key directly
+      const batchYear = pending.batch_year ?? pending.batch ?? null;
+
+      console.log("[useAuth] recovery upsert payload:", {
+        id: userId,
+        name: pending.name,
+        email: user.email,
+        branch: pending.branch,
+        batch_year: batchYear,
+        roll_no: pending.roll_no,
+      });
 
       const { error } = await supabase.from("profiles").upsert(
         {
@@ -70,10 +88,10 @@ export function useAuthState(): AuthState {
           name: pending.name,
           email: user.email!,
           branch: pending.branch,
-          batch_year: pending.batch,
+          batch_year: batchYear,
           roll_no: pending.roll_no || null,
         },
-        { onConflict: "id", ignoreDuplicates: true },
+        { onConflict: "id", ignoreDuplicates: false },
       );
 
       if (error) {
@@ -81,11 +99,11 @@ export function useAuthState(): AuthState {
           "[useAuth] profile recovery upsert failed:",
           error.code,
           error.message,
-          error,
         );
         return false;
       }
-      localStorage.removeItem("pending_profile");
+
+      safeStorage.remove("pending_profile");
       console.log("[useAuth] profile recovery upsert succeeded");
       return true;
     } catch (e) {
@@ -95,14 +113,12 @@ export function useAuthState(): AuthState {
   }
 
   async function fetchProfile(userId: string, isRecovery = false) {
-    if (isRecovery) {
-      console.log(
-        "[useAuth] re-fetching profile after recovery for uid:",
-        userId,
-      );
-    } else {
-      console.log("[useAuth] fetching profile for uid:", userId);
-    }
+    console.log(
+      isRecovery
+        ? "[useAuth] re-fetching profile after recovery for uid:"
+        : "[useAuth] fetching profile for uid:",
+      userId,
+    );
 
     const { data, error } = await supabase
       .from("profiles")
@@ -111,12 +127,7 @@ export function useAuthState(): AuthState {
       .maybeSingle();
 
     if (error) {
-      console.error(
-        "[useAuth] fetchProfile error:",
-        error.code,
-        error.message,
-        error,
-      );
+      console.error("[useAuth] fetchProfile error:", error.code, error.message);
       setProfile(null);
       setLoading(false);
       return;
@@ -143,7 +154,7 @@ export function useAuthState(): AuthState {
         }
       } else {
         console.error(
-          "[useAuth] profile still missing after recovery attempt — forcing sign out for uid:",
+          "[useAuth] profile still missing after recovery — forcing sign out for uid:",
           userId,
         );
         await supabase.auth.signOut();

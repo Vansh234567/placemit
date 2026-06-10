@@ -16,11 +16,58 @@ if (!supabaseAnonKey) {
   );
 }
 
+// Safe localStorage wrapper — graceful fallback for Safari private mode
+// where localStorage throws SecurityError
+export const safeStorage = {
+  get(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key: string, value: string): void {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* Safari private mode — silently ignore */
+    }
+  },
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  },
+};
+
+// In-memory fallback storage for Safari private mode
+const memStorage: Record<string, string> = {};
+const safeBrowserStorage = (() => {
+  try {
+    localStorage.setItem("__sb_test__", "1");
+    localStorage.removeItem("__sb_test__");
+    return localStorage;
+  } catch {
+    return {
+      getItem: (key: string) => memStorage[key] ?? null,
+      setItem: (key: string, value: string) => {
+        memStorage[key] = value;
+      },
+      removeItem: (key: string) => {
+        delete memStorage[key];
+      },
+    };
+  }
+})();
+
 export const supabase = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "", {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    storage: safeBrowserStorage,
   },
 });
 

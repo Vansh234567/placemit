@@ -1,5 +1,11 @@
+// artifacts/placemit/src/pages/Login.tsx
 import { useState, useEffect, useRef } from "react";
-import { supabase, ALLOWED_DOMAIN, BRANCHES } from "@/lib/supabase";
+import {
+  supabase,
+  safeStorage,
+  ALLOWED_DOMAIN,
+  BRANCHES,
+} from "@/lib/supabase";
 
 type Step = "details" | "otp";
 
@@ -77,6 +83,8 @@ export default function LoginPage() {
     setLoading(true);
     console.log("[sendOTP] sending OTP to:", email.trim());
 
+    // Save everything needed for profile creation BEFORE calling Supabase.
+    // Use batch_year key (not batch) so recovery reads it correctly.
     const pendingProfile = {
       name: name.trim(),
       email: email.trim(),
@@ -85,8 +93,11 @@ export default function LoginPage() {
       roll_no: rollNo.trim() || null,
     };
 
-    console.log("[sendOTP] saving pending_profile:", pendingProfile);
-    localStorage.setItem("pending_profile", JSON.stringify(pendingProfile));
+    console.log(
+      "[sendOTP] saving pending_profile to safeStorage:",
+      pendingProfile,
+    );
+    safeStorage.set("pending_profile", JSON.stringify(pendingProfile));
 
     const { error: err } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -123,39 +134,45 @@ export default function LoginPage() {
       type: "email",
     });
 
-    console.log("[verifyOTP] response data:", data);
-    console.log("[verifyOTP] session:", data?.session);
-    console.log("[verifyOTP] user:", data?.user);
+    console.log("[verifyOTP] session:", data?.session ? "present" : "null");
+    console.log("[verifyOTP] user id:", data?.user?.id ?? "none");
     console.log("[verifyOTP] error:", err);
 
     if (err) {
-      console.error("[verifyOTP] verification failed:", err.message, err);
+      console.error("[verifyOTP] verification failed:", err.message);
       setLoading(false);
       setError(err.message);
       return;
     }
 
     if (!data.session) {
-      console.error("[verifyOTP] no session returned after successful OTP verify");
+      console.error("[verifyOTP] no session returned after OTP verify");
       setLoading(false);
-      setError("Authentication failed — no session returned. Please try again.");
+      setError(
+        "Authentication failed — no session returned. Please try again.",
+      );
       return;
     }
 
     console.log("[verifyOTP] OTP verification success — uid:", data.user?.id);
 
     if (data.user) {
-      const rawPending = localStorage.getItem("pending_profile");
+      // Read pending_profile — saved before OTP was sent
+      const rawPending = safeStorage.get("pending_profile");
       const pending = rawPending ? JSON.parse(rawPending) : {};
 
+      // Resolve each field with fallback to current state values
       const profileName = pending.name ?? name.trim();
       const profileEmail = data.user.email ?? email.trim();
       const profileBranch = pending.branch ?? branch;
-      const profileBatchYear = pending.batch_year ?? Number(batchYear);
-      const profileRollNo = pending.roll_no ?? rollNo.trim() ?? null;
+      const profileBatchYear =
+        pending.batch_year != null
+          ? Number(pending.batch_year)
+          : Number(batchYear);
+      const profileRollNo = pending.roll_no ?? (rollNo.trim() || null);
 
       console.log("[verifyOTP] pending_profile contents:", pending);
-      console.log("[verifyOTP] batch_year value:", profileBatchYear);
+      console.log("[verifyOTP] resolved batch_year:", profileBatchYear);
       console.log("[verifyOTP] upserting profile:", {
         id: data.user.id,
         name: profileName,
@@ -165,6 +182,7 @@ export default function LoginPage() {
         roll_no: profileRollNo,
       });
 
+      // ignoreDuplicates: false — ensures all columns are updated even on re-registration
       const { error: upsertError } = await supabase.from("profiles").upsert(
         {
           id: data.user.id,
@@ -174,16 +192,16 @@ export default function LoginPage() {
           batch_year: profileBatchYear,
           roll_no: profileRollNo,
         },
-        { onConflict: "id", ignoreDuplicates: true },
+        { onConflict: "id", ignoreDuplicates: false },
       );
 
       if (upsertError) {
         console.error(
-          "[verifyOTP] profile upsert failed — signing out:",
+          "[verifyOTP] profile upsert failed:",
           upsertError.code,
           upsertError.message,
-          upsertError,
         );
+        // Sign out so user doesn't get stuck in a broken state
         await supabase.auth.signOut();
         setLoading(false);
         setError("Account setup failed. Please try signing in again.");
@@ -191,11 +209,13 @@ export default function LoginPage() {
       }
 
       console.log("[verifyOTP] profile upsert success — uid:", data.user.id);
-      localStorage.removeItem("pending_profile");
+      // Only remove pending_profile after confirmed success
+      safeStorage.remove("pending_profile");
     }
 
     setLoading(false);
-    console.log("[verifyOTP] auth complete — session active, AuthGate will redirect");
+    console.log("[verifyOTP] auth complete — AuthGate will redirect");
+    // onAuthStateChange in useAuth.ts will fire and load the profile automatically
   }
 
   function handleBackToDetails() {
@@ -245,25 +265,43 @@ export default function LoginPage() {
               onChange={(e) => setRollNo(e.target.value)}
             />
             <select
-              style={{ ...styles.input, backgroundColor: "#161a20", color: "#f0f2f5" }}
+              style={{
+                ...styles.input,
+                backgroundColor: "#161a20",
+                color: "#f0f2f5",
+              }}
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
             >
-              <option value="" style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}>
+              <option
+                value=""
+                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+              >
                 Select branch
               </option>
               {BRANCHES.map((b) => (
-                <option key={b} value={b} style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}>
+                <option
+                  key={b}
+                  value={b}
+                  style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+                >
                   {b}
                 </option>
               ))}
             </select>
             <select
-              style={{ ...styles.input, backgroundColor: "#161a20", color: "#f0f2f5" }}
+              style={{
+                ...styles.input,
+                backgroundColor: "#161a20",
+                color: "#f0f2f5",
+              }}
               value={batchYear}
               onChange={(e) => setBatchYear(e.target.value)}
             >
-              <option value="" style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}>
+              <option
+                value=""
+                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
+              >
                 Select batch year
               </option>
               {BATCH_YEARS.map((y) => (
@@ -299,11 +337,23 @@ export default function LoginPage() {
           </>
         ) : (
           <>
-            <p style={{ color: "#8a8f9a", fontSize: 14, marginBottom: 16, textAlign: "center" }}>
+            <p
+              style={{
+                color: "#8a8f9a",
+                fontSize: 14,
+                marginBottom: 16,
+                textAlign: "center",
+              }}
+            >
               Code sent to <strong style={{ color: "#7ca4ff" }}>{email}</strong>
             </p>
             <input
-              style={{ ...styles.input, fontSize: 24, letterSpacing: 10, textAlign: "center" }}
+              style={{
+                ...styles.input,
+                fontSize: 24,
+                letterSpacing: 10,
+                textAlign: "center",
+              }}
               type="text"
               inputMode="numeric"
               placeholder="000000"

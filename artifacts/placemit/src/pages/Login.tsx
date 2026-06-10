@@ -61,11 +61,10 @@ export default function LoginPage() {
       JSON.stringify({
         name: name.trim(),
         branch,
-        year,
+        batch: Number(batchYear),
         roll_no: rollNo.trim(),
       }),
     );
-
     const { error: err } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: true },

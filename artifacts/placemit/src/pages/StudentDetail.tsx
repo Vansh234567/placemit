@@ -1,23 +1,40 @@
-import { useGetStudent, getGetStudentQueryKey } from "@workspace/api-client-react";
+import {
+  useGetStudent,
+  getGetStudentQueryKey,
+} from "@workspace/api-client-react";
 import { useParams, Link } from "wouter";
 import { yearToLabel } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Building2, MapPin, ExternalLink, GraduationCap, IndianRupee, FileText, Linkedin } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  ExternalLink,
+  GraduationCap,
+  IndianRupee,
+  FileText,
+  Linkedin,
+} from "lucide-react";
 import { SiGithub } from "react-icons/si";
 
 export default function StudentDetail() {
   const { id } = useParams<{ id: string }>();
   const studentId = Number(id);
-  
-  const { data: student, isLoading } = useGetStudent(studentId, { 
-    query: { enabled: !!id, queryKey: getGetStudentQueryKey(studentId) } 
+
+  const { data: student, isLoading } = useGetStudent(studentId, {
+    query: { enabled: !!id, queryKey: getGetStudentQueryKey(studentId) },
   });
 
   if (isLoading) {
-    return <div className="space-y-6"><Skeleton className="h-64 w-full" /><Skeleton className="h-40 w-full" /></div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
   }
 
   if (!student) {
@@ -26,7 +43,10 @@ export default function StudentDetail() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <Link href="/students" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+      <Link
+        href="/students"
+        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Directory
       </Link>
@@ -36,9 +56,13 @@ export default function StudentDetail() {
         <div className="px-6 sm:px-8 pb-8">
           <div className="relative flex justify-between items-end -mt-12 mb-6">
             <Avatar className="w-24 h-24 border-4 border-background shadow-sm">
-              <AvatarImage src={student.avatarUrl || ''} />
+              <AvatarImage src={student.avatarUrl || ""} />
               <AvatarFallback className="text-3xl bg-muted font-semibold">
-                {student.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                {student.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .substring(0, 2)}
               </AvatarFallback>
             </Avatar>
             {student.placedAt && (
@@ -47,30 +71,47 @@ export default function StudentDetail() {
               </Badge>
             )}
           </div>
-          
+
           <div className="space-y-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">{student.name}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {student.name}
+              </h1>
               <p className="text-lg text-muted-foreground mt-1">
-                {student.branch} &bull; {yearToLabel(student.year)}
+                {student.branch} &bull; {student.batch_year}
               </p>
             </div>
-            
+
             <div className="flex flex-wrap gap-4 pt-2">
               {student.linkedinUrl && (
-                <a href={student.linkedinUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-[#0A66C2] transition-colors">
+                <a
+                  href={student.linkedinUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-[#0A66C2] transition-colors"
+                >
                   <Linkedin className="w-5 h-5" />
                   LinkedIn
                 </a>
               )}
               {student.githubUrl && (
-                <a href={student.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href={student.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <SiGithub className="w-5 h-5" />
                   GitHub
                 </a>
               )}
               {student.resumeUrl && (
-                <a href={student.resumeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                <a
+                  href={student.resumeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                >
                   <FileText className="w-5 h-5" />
                   Resume
                 </a>
@@ -88,13 +129,15 @@ export default function StudentDetail() {
             </CardHeader>
             <CardContent>
               {student.bio ? (
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{student.bio}</p>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {student.bio}
+                </p>
               ) : (
                 <p className="text-muted-foreground italic">No bio provided.</p>
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Skills</CardTitle>
@@ -102,19 +145,25 @@ export default function StudentDetail() {
             <CardContent>
               {student.skills ? (
                 <div className="flex flex-wrap gap-2">
-                  {student.skills.split(',').map((skill, i) => (
-                    <Badge key={i} variant="secondary" className="px-3 py-1 text-sm font-medium bg-secondary/50">
+                  {student.skills.split(",").map((skill, i) => (
+                    <Badge
+                      key={i}
+                      variant="secondary"
+                      className="px-3 py-1 text-sm font-medium bg-secondary/50"
+                    >
                       {skill.trim()}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground italic">No skills listed.</p>
+                <p className="text-muted-foreground italic">
+                  No skills listed.
+                </p>
               )}
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="space-y-8">
           <Card>
             <CardHeader>
@@ -126,7 +175,9 @@ export default function StudentDetail() {
                   <GraduationCap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">CGPA</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    CGPA
+                  </p>
                   <p className="font-semibold">{student.cgpa}</p>
                 </div>
               </div>
@@ -135,7 +186,9 @@ export default function StudentDetail() {
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Roll Number</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Roll Number
+                  </p>
                   <p className="font-semibold">{student.rollNo}</p>
                 </div>
               </div>
@@ -152,12 +205,16 @@ export default function StudentDetail() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Company</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    Company
+                  </p>
                   <p className="text-lg font-bold">{student.placedAt}</p>
                 </div>
                 {student.packageOffered && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Package</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Package
+                    </p>
                     <p className="text-lg font-bold flex items-center gap-1">
                       <IndianRupee className="w-4 h-4" />
                       {student.packageOffered}

@@ -2,7 +2,8 @@ import { supabase } from "./supabase";
 
 export type Experience = {
   id: number;
-  studentName: string;
+  authorId: string | null;
+  batchYear: number | null;
   companyName: string;
   role: string;
   rounds: number;
@@ -19,7 +20,6 @@ export type Experience = {
 };
 
 type InsertExperience = {
-  studentName: string;
   companyName: string;
   role: string;
   rounds: number;
@@ -36,7 +36,8 @@ type InsertExperience = {
 function mapRow(row: Record<string, unknown>): Experience {
   return {
     id: row.id as number,
-    studentName: row.student_name as string,
+    authorId: (row.author_id as string | null) ?? null,
+    batchYear: (row.batch_year as number | null) ?? null,
     companyName: row.company as string,
     role: row.role as string,
     rounds: row.rounds as number,
@@ -69,11 +70,37 @@ export async function listExperiences(search?: string): Promise<Experience[]> {
   return (data ?? []).map(mapRow);
 }
 
-export async function createExperience(input: InsertExperience): Promise<Experience> {
+export async function createExperience(
+  input: InsertExperience,
+): Promise<Experience> {
+  // Get authenticated user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated. Please sign in and try again.");
+  }
+
+  // Fetch batch_year from the user's profile
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("batch_year")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError) {
+    console.error(
+      "[createExperience] failed to fetch profile:",
+      profileError.message,
+    );
+  }
+
   const { data, error } = await supabase
     .from("experiences")
     .insert({
-      student_name: input.studentName,
+      author_id: user.id,
+      batch_year: profile?.batch_year ?? null,
       company: input.companyName,
       role: input.role,
       rounds: input.rounds,
@@ -90,5 +117,5 @@ export async function createExperience(input: InsertExperience): Promise<Experie
     .single();
 
   if (error) throw new Error(error.message);
-  return mapRow(data as Record<string, unknown>);
+  return mapRow(data);
 }

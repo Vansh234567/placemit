@@ -141,7 +141,6 @@ export default function Experiences() {
     setSubmitting(true);
     try {
       await createExperience({
-        studentName: profile.name,
         companyName: form.companyName.trim(),
         role: form.role.trim(),
         rounds: parseInt(form.rounds) || 1,
@@ -453,11 +452,11 @@ function ExperienceCard({ exp }: { exp: Experience }) {
       <div className="px-4 sm:px-5 py-3 sm:py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-            {exp.studentName.charAt(0)}
+            {String(exp.batchYear ?? "?").slice(-2)}
           </div>
           <div className="min-w-0">
             <p className="font-semibold text-sm leading-none truncate">
-              {exp.studentName}
+              {exp.batchYear ? `${exp.batchYear} Batch` : "MIT Student"}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {new Date(exp.createdAt).toLocaleDateString("en-IN", {

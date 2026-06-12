@@ -41,6 +41,9 @@ export default function Community() {
           profiles!questions_author_id_fkey (
             batch_year,
             name
+          ),
+          answers (
+            id
           )
         `,
         )
@@ -237,7 +240,8 @@ export default function Community() {
                         {new Date(post.created_at).toLocaleDateString()}
                       </span>
                       <span className="flex items-center gap-1 ml-auto">
-                        <MessageSquare className="w-3 h-3" />0
+                        <MessageSquare className="w-3 h-3" />
+                        {post.answers?.length ?? 0}
                       </span>
                     </div>
                   </div>

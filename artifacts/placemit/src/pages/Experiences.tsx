@@ -200,7 +200,7 @@ export default function Experiences() {
         ) : (
           <div className="flex items-center gap-2 text-xs text-muted-foreground border border-dashed rounded-md px-3 py-2 w-full sm:w-auto">
             <Lock className="w-3.5 h-3.5 shrink-0" />
-            Only 4th-year students can submit
+             Only final-year students and alumni can submit
           </div>
         )}
       </div>

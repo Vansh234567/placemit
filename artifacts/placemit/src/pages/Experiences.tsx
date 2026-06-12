@@ -82,7 +82,8 @@ export default function Experiences() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
 
-  const isSenior = Number(profile?.year) >= 4;
+  const batchYear = Number(profile?.batch_year);
+  const isSenior = batchYear > 0 && batchYear <= 2027;
 
   const { data: experiences, isLoading } = useQuery({
     queryKey: ["experiences", debouncedSearch],

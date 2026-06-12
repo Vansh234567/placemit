@@ -11,6 +11,7 @@ export type AuthState = {
 };
 
 export function useAuthState(): AuthState {
+  console.log("USEAUTH_V2");
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);

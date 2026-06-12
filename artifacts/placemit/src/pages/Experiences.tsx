@@ -258,6 +258,16 @@ export default function Experiences() {
             </DialogDescription>
           </DialogHeader>
 
+          <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 text-sm">
+            <p className="font-medium text-green-600 dark:text-green-400">
+              Your submission is anonymous
+            </p>
+            <p className="text-muted-foreground mt-1">
+              Your name and email will not be displayed publicly. Only your
+              batch will be shown to other students.
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6 mt-2">
             {/* Basic info */}
             <div className="space-y-4">

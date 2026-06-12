@@ -10,6 +10,7 @@ import PostDetail from "@/pages/PostDetail";
 import Experiences from "@/pages/Experiences";
 import { AuthContext, useAuthState } from "@/hooks/useAuth";
 import LoginPage from "@/pages/Login";
+import ProfileSetupPage from "@/pages/ProfileSetup";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,25 @@ function Router() {
       </Switch>
     </AppLayout>
   );
+}
+
+/**
+ * A profile is "complete" when it has the minimum fields required
+ * to use the app. Existing users with these fields already set
+ * will never see ProfileSetup again.
+ */
+function isProfileComplete(
+  profile: {
+    name?: string | null;
+    branch?: string | null;
+    batch_year?: number | null;
+  } | null,
+): boolean {
+  if (!profile) return false;
+  if (!profile.name || !profile.name.trim()) return false;
+  if (!profile.branch || !profile.branch.trim()) return false;
+  if (profile.batch_year == null) return false;
+  return true;
 }
 
 function AuthGate() {
@@ -72,16 +92,9 @@ function AuthGate() {
     console.log("[AuthGate] no session → showing LoginPage");
     return <LoginPage />;
   }
-  if (
-    auth.session &&
-    auth.profile &&
-    (!auth.profile.name || !auth.profile.branch || !auth.profile.batch_year)
-  ) {
-    return <ProfileSetupPage />;
-  }
 
-  // Session exists but profile row is missing —
-  // useAuth will trigger recovery; show spinner while it works
+  // Session exists but profile row is missing entirely —
+  // useAuth's recovery logic will create a minimal row; show spinner while it works.
   if (!auth.profile) {
     console.log(
       "[AuthGate] session exists but profile missing → showing spinner",
@@ -103,7 +116,14 @@ function AuthGate() {
     );
   }
 
-  // Fully authenticated — render app
+  // Profile exists but required fields are missing — go to ProfileSetup.
+  // Existing users with complete profiles skip this entirely.
+  if (!isProfileComplete(auth.profile)) {
+    console.log("[AuthGate] profile incomplete → showing ProfileSetupPage");
+    return <ProfileSetupPage />;
+  }
+
+  // Fully authenticated with complete profile — render app
   console.log("[AuthGate] session + profile OK → rendering app");
   return (
     <AuthContext.Provider value={auth}>

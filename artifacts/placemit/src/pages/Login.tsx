@@ -1,29 +1,10 @@
 // artifacts/placemit/src/pages/Login.tsx
 import { useState, useEffect, useRef } from "react";
-import {
-  supabase,
-  safeStorage,
-  ALLOWED_DOMAIN,
-  BRANCHES,
-} from "@/lib/supabase";
+import { supabase, ALLOWED_DOMAIN } from "@/lib/supabase";
 
 type Step = "details" | "otp";
 
 const RESEND_COOLDOWN_SECONDS = 60;
-
-const BATCH_YEARS = [
-  { value: "2020", label: "2020 Batch" },
-  { value: "2021", label: "2021 Batch" },
-  { value: "2022", label: "2022 Batch" },
-  { value: "2023", label: "2023 Batch" },
-  { value: "2024", label: "2024 Batch" },
-  { value: "2025", label: "2025 Batch" },
-  { value: "2026", label: "2026 Batch" },
-  { value: "2027", label: "2027 Batch" },
-  { value: "2028", label: "2028 Batch" },
-  { value: "2029", label: "2029 Batch" },
-  { value: "2030", label: "2030 Batch" },
-];
 
 export default function LoginPage() {
   const [step, setStep] = useState<Step>("details");
@@ -62,38 +43,10 @@ export default function LoginPage() {
       setError(`Only @${ALLOWED_DOMAIN} emails are allowed`);
       return;
     }
-    if (!name.trim()) {
-      setError("Please enter your full name");
-      return;
-    }
-    if (!branch) {
-      setError("Please select your branch");
-      return;
-    }
-    if (!batchYear) {
-      setError("Please select your batch year");
-      return;
-    }
     if (cooldown > 0) return;
 
     setLoading(true);
     console.log("[sendOTP] sending OTP to:", email.trim());
-
-    // Save everything needed for profile creation BEFORE calling Supabase.
-    // Use batch_year key (not batch) so recovery reads it correctly.
-    const pendingProfile = {
-      name: name.trim(),
-      email: email.trim(),
-      branch,
-      batch_year: Number(batchYear),
-      roll_no: rollNo.trim() || null,
-    };
-
-    console.log(
-      "[sendOTP] saving pending_profile to safeStorage:",
-      pendingProfile,
-    );
-    safeStorage.set("pending_profile", JSON.stringify(pendingProfile));
 
     const { error: err } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -151,67 +104,9 @@ export default function LoginPage() {
     }
 
     console.log("[verifyOTP] OTP verification success — uid:", data.user?.id);
-
-    if (data.user) {
-      // Read pending_profile — saved before OTP was sent
-      const rawPending = safeStorage.get("pending_profile");
-      const pending = rawPending ? JSON.parse(rawPending) : {};
-
-      // Resolve each field with fallback to current state values
-      const profileName = pending.name ?? name.trim();
-      const profileEmail = data.user.email ?? email.trim();
-      const profileBranch = pending.branch ?? branch;
-      const profileBatchYear =
-        pending.batch_year != null
-          ? Number(pending.batch_year)
-          : Number(batchYear);
-      const profileRollNo = pending.roll_no ?? (rollNo.trim() || null);
-
-      console.log("[verifyOTP] pending_profile contents:", pending);
-      console.log("[verifyOTP] resolved batch_year:", profileBatchYear);
-      console.log("[verifyOTP] upserting profile:", {
-        id: data.user.id,
-        name: profileName,
-        email: profileEmail,
-        branch: profileBranch,
-        batch_year: profileBatchYear,
-        roll_no: profileRollNo,
-      });
-
-      // ignoreDuplicates: false — ensures all columns are updated even on re-registration
-      const { error: upsertError } = await supabase.from("profiles").upsert(
-        {
-          id: data.user.id,
-          name: profileName,
-          email: profileEmail,
-          branch: profileBranch,
-          batch_year: profileBatchYear,
-          roll_no: profileRollNo,
-        },
-        { onConflict: "id", ignoreDuplicates: false },
-      );
-
-      if (upsertError) {
-        console.error(
-          "[verifyOTP] profile upsert failed:",
-          upsertError.code,
-          upsertError.message,
-        );
-        // Sign out so user doesn't get stuck in a broken state
-        await supabase.auth.signOut();
-        setLoading(false);
-        setError("Account setup failed. Please try signing in again.");
-        return;
-      }
-
-      console.log("[verifyOTP] profile upsert success — uid:", data.user.id);
-      // Only remove pending_profile after confirmed success
-      safeStorage.remove("pending_profile");
-    }
-
     setLoading(false);
     console.log("[verifyOTP] auth complete — AuthGate will redirect");
-    // onAuthStateChange in useAuth.ts will fire and load the profile automatically
+    // AuthGate handles routing: ProfileSetup if profile incomplete, else app
   }
 
   function handleBackToDetails() {
@@ -246,70 +141,6 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <input
-              style={styles.input}
-              type="text"
-              placeholder="Full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              style={styles.input}
-              type="text"
-              placeholder="Roll number (e.g. 220905001)"
-              value={rollNo}
-              onChange={(e) => setRollNo(e.target.value)}
-            />
-            <select
-              style={{
-                ...styles.input,
-                backgroundColor: "#161a20",
-                color: "#f0f2f5",
-              }}
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-            >
-              <option
-                value=""
-                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-              >
-                Select branch
-              </option>
-              {BRANCHES.map((b) => (
-                <option
-                  key={b}
-                  value={b}
-                  style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-                >
-                  {b}
-                </option>
-              ))}
-            </select>
-            <select
-              style={{
-                ...styles.input,
-                backgroundColor: "#161a20",
-                color: "#f0f2f5",
-              }}
-              value={batchYear}
-              onChange={(e) => setBatchYear(e.target.value)}
-            >
-              <option
-                value=""
-                style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-              >
-                Select batch year
-              </option>
-              {BATCH_YEARS.map((y) => (
-                <option
-                  key={y.value}
-                  value={y.value}
-                  style={{ backgroundColor: "#161a20", color: "#f0f2f5" }}
-                >
-                  {y.label}
-                </option>
-              ))}
-            </select>
             <button
               style={{
                 ...styles.btn,

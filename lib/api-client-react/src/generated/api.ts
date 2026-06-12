@@ -1575,12 +1575,9 @@ export const upvoteComment = async (
   commentId: number,
   options?: RequestInit,
 ): Promise<Comment> => {
-  return await supabase.from("questions").insert({
-    author_id: profile.id,
-    title,
-    content,
-    tags: [],
-    is_anon: false,
+  return customFetch<Comment>(getUpvoteCommentUrl(postId, commentId), {
+    ...options,
+    method: "POST",
   });
 };
 

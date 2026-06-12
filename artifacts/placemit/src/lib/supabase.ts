@@ -129,7 +129,6 @@ export type Profile = {
   name: string;
   email: string;
   branch: string;
-  year: number;
   batch_year: number | null;
   roll_no: string | null;
 };

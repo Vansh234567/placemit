@@ -78,7 +78,7 @@ export default function StudentDetail() {
                 {student.name}
               </h1>
               <p className="text-lg text-muted-foreground mt-1">
-                {student.branch} &bull; {student.batch_year}
+                {student.branch} &bull; {student.year}
               </p>
             </div>
 

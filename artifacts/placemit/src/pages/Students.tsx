@@ -83,7 +83,7 @@ export default function Students() {
                         {student.name}
                       </h3>
                       <p className="text-sm text-muted-foreground truncate">
-                        {student.branch} &bull; {student.batch_year}
+                        {student.branch} &bull; {student.year}
                       </p>
                     </div>
                   </CardHeader>

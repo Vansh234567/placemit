@@ -87,33 +87,15 @@ function AuthGate() {
     );
   }
 
-  // No session at all — show login
   if (!auth.session) {
     console.log("[AuthGate] no session → showing LoginPage");
     return <LoginPage />;
   }
 
-  // Session exists but profile row is missing entirely —
-  // useAuth's recovery logic will create a minimal row; show spinner while it works.
+  // No session at all — show login
   if (!auth.profile) {
-    console.log(
-      "[AuthGate] session exists but profile missing → showing spinner",
-    );
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#0a0c10",
-          color: "#8a8f9a",
-          fontSize: 16,
-        }}
-      >
-        Setting up your account...
-      </div>
-    );
+    console.log("[AuthGate] profile missing → showing ProfileSetupPage");
+    return <ProfileSetupPage />;
   }
 
   // Profile exists but required fields are missing — go to ProfileSetup.

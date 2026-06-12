@@ -1,6 +1,6 @@
 // artifacts/placemit/src/hooks/useAuth.ts
 import { useEffect, useState, createContext, useContext } from "react";
-import { supabase, safeStorage, type Profile } from "@/lib/supabase";
+import { supabase, type Profile } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 
 export type AuthState = {
@@ -51,74 +51,8 @@ export function useAuthState(): AuthState {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function attemptProfileRecovery(userId: string): Promise<boolean> {
-    console.log("[useAuth] profile recovery attempt for uid:", userId);
-    const raw = safeStorage.get("pending_profile");
-    if (!raw) {
-      console.warn(
-        "[useAuth] no pending_profile in storage — cannot self-heal",
-      );
-      return false;
-    }
-    try {
-      const pending = JSON.parse(raw);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        console.warn("[useAuth] recovery: no auth user found");
-        return false;
-      }
-
-      // pending_profile saved by Login.tsx uses batch_year key directly
-      const batchYear = pending.batch_year ?? pending.batch ?? null;
-
-      console.log("[useAuth] recovery upsert payload:", {
-        id: userId,
-        name: pending.name,
-        email: user.email,
-        branch: pending.branch,
-        batch_year: batchYear,
-        roll_no: pending.roll_no,
-      });
-
-      const { error } = await supabase.from("profiles").upsert(
-        {
-          id: userId,
-          name: pending.name,
-          email: user.email!,
-          branch: pending.branch,
-          batch_year: batchYear,
-          roll_no: pending.roll_no || null,
-        },
-        { onConflict: "id", ignoreDuplicates: false },
-      );
-
-      if (error) {
-        console.error(
-          "[useAuth] profile recovery upsert failed:",
-          error.code,
-          error.message,
-        );
-        return false;
-      }
-
-      safeStorage.remove("pending_profile");
-      console.log("[useAuth] profile recovery upsert succeeded");
-      return true;
-    } catch (e) {
-      console.error("[useAuth] profile recovery exception:", e);
-      return false;
-    }
-  }
-
-  async function fetchProfile(userId: string, isRecovery = false) {
-    console.log(
-      isRecovery
-        ? "[useAuth] re-fetching profile after recovery for uid:"
-        : "[useAuth] fetching profile for uid:",
-      userId,
-    );
+  async function fetchProfile(userId: string) {
+    console.log("[useAuth] fetching profile for uid:", userId);
 
     const { data, error } = await supabase
       .from("profiles")
@@ -134,33 +68,9 @@ export function useAuthState(): AuthState {
     }
 
     if (!data) {
-      if (!isRecovery) {
-        console.warn(
-          "[useAuth] no profile row found for uid:",
-          userId,
-          "— attempting self-healing recovery",
-        );
-        const recovered = await attemptProfileRecovery(userId);
-        if (recovered) {
-          await fetchProfile(userId, true);
-        } else {
-          console.error(
-            "[useAuth] profile recovery failed — forcing sign out for uid:",
-            userId,
-          );
-          await supabase.auth.signOut();
-          setProfile(null);
-          setLoading(false);
-        }
-      } else {
-        console.error(
-          "[useAuth] profile still missing after recovery — forcing sign out for uid:",
-          userId,
-        );
-        await supabase.auth.signOut();
-        setProfile(null);
-        setLoading(false);
-      }
+      console.log("[useAuth] profile missing - waiting for ProfileSetupPage");
+      setProfile(null);
+      setLoading(false);
       return;
     }
 

@@ -72,6 +72,13 @@ function AuthGate() {
     console.log("[AuthGate] no session → showing LoginPage");
     return <LoginPage />;
   }
+  if (
+    auth.session &&
+    auth.profile &&
+    (!auth.profile.name || !auth.profile.branch || !auth.profile.batch_year)
+  ) {
+    return <ProfileSetupPage />;
+  }
 
   // Session exists but profile row is missing —
   // useAuth will trigger recovery; show spinner while it works

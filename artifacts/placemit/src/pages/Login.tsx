@@ -28,10 +28,6 @@ const BATCH_YEARS = [
 export default function LoginPage() {
   const [step, setStep] = useState<Step>("details");
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [branch, setBranch] = useState("");
-  const [batchYear, setBatchYear] = useState("");
-  const [rollNo, setRollNo] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

@@ -47,7 +47,15 @@ export default function PostDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("answers")
-        .select("*")
+        .select(
+          `
+          *,
+          profiles!answers_author_id_fkey (
+            batch_year,
+            name
+          )
+        `,
+        )
         .eq("question_id", postId)
         .order("created_at", { ascending: true });
 
@@ -193,7 +201,12 @@ export default function PostDetail() {
                           U
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs font-semibold">MIT Student</span>
+                      <span className="text-xs font-semibold">
+                        Anonymous User
+                        {comment.profiles?.batch_year
+                          ? ` • Batch ${comment.profiles.batch_year}`
+                          : ""}
+                      </span>{" "}
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {new Date(comment.created_at).toLocaleDateString()}

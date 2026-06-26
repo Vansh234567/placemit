@@ -140,7 +140,7 @@ export default function LoginPage() {
             }}
           >
             Disclaimer: PlaceMIT is an independent student initiative and is not
-            affiliated with, endorsed by, or operated by the Office of ILPPS,
+            affiliated with, or operated by the Office of ILPPS,
             the Placement Cell, or the Placement Team of MIT, Manipal.
           </strong>
         </p>

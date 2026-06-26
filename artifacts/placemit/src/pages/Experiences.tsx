@@ -43,7 +43,6 @@ import { BRANCHES } from "@/lib/supabase";
 type FormState = {
   companyName: string;
   role: string;
-  packageOffered: string;
   cgpa: string;
   cgpaCriteria: string;
   eligibleBranches: string[];
@@ -57,7 +56,6 @@ type FormState = {
 const EMPTY_FORM: FormState = {
   companyName: "",
   role: "",
-  packageOffered: "",
   cgpa: "",
   cgpaCriteria: "",
   eligibleBranches: [],
@@ -145,7 +143,6 @@ export default function Experiences() {
         companyName: form.companyName.trim(),
         role: form.role.trim(),
         rounds: parseInt(form.rounds) || 1,
-        packageOffered: form.packageOffered.trim() || undefined,
         cgpa: cgpaNum,
         cgpaCriteria: form.cgpaCriteria.trim() || undefined,
         eligibleBranches:
@@ -297,15 +294,7 @@ export default function Experiences() {
                   />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="package">Package</Label>
-                <Input
-                  id="package"
-                  placeholder="e.g. 45 LPA"
-                  value={form.packageOffered}
-                  onChange={(e) => setField("packageOffered", e.target.value)}
-                />
-              </div>
+              
             </div>
 
             {/* Eligibility */}
@@ -506,12 +495,6 @@ function ExperienceCard({ exp }: { exp: Experience }) {
             <Star className="w-3 h-3" />
             My CGPA {exp.cgpa}
           </Badge>
-        )}
-        {exp.packageOffered && (
-          <span className="ml-auto text-sm font-bold text-primary flex items-center gap-0.5">
-            <IndianRupee className="w-3.5 h-3.5" />
-            {exp.packageOffered}
-          </span>
         )}
       </div>
 

@@ -210,17 +210,6 @@ export default function StudentDetail() {
                   </p>
                   <p className="text-lg font-bold">{student.placedAt}</p>
                 </div>
-                {student.packageOffered && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
-                      Package
-                    </p>
-                    <p className="text-lg font-bold flex items-center gap-1">
-                      <IndianRupee className="w-4 h-4" />
-                      {student.packageOffered}
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}

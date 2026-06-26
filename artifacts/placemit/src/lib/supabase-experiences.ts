@@ -13,7 +13,6 @@ export type Experience = {
   cgpaCriteria?: string | null;
   eligibleBranches?: string[] | null;
   cgpa?: number | null;
-  packageOffered?: string | null;
   resourcesUsed?: string | null;
   tips?: string | null;
   createdAt: string;
@@ -23,7 +22,6 @@ type InsertExperience = {
   companyName: string;
   role: string;
   rounds: number;
-  packageOffered?: string;
   cgpa?: number;
   cgpaCriteria?: string;
   eligibleBranches?: string[];
@@ -47,7 +45,6 @@ function mapRow(row: Record<string, unknown>): Experience {
     cgpaCriteria: row.cgpa_criteria as string | null,
     eligibleBranches: row.eligible_branches as string[] | null,
     cgpa: row.cgpa as number | null,
-    packageOffered: row.package_offered as string | null,
     resourcesUsed: row.resources_used as string | null,
     tips: row.tips as string | null,
     createdAt: row.created_at as string,
@@ -104,7 +101,6 @@ export async function createExperience(
       company: input.companyName,
       role: input.role,
       rounds: input.rounds,
-      package_offered: input.packageOffered ?? null,
       cgpa: input.cgpa ?? null,
       cgpa_criteria: input.cgpaCriteria ?? null,
       eligible_branches: input.eligibleBranches ?? null,

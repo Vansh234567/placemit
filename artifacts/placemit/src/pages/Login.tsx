@@ -136,11 +136,12 @@ export default function LoginPage() {
               fontSize: "12px",
               opacity: 0.85,
               lineHeight: 1.5,
+              color: "#fff",
             }}
           >
-            Disclaimer: PlaceMIT is an independent student initiative and is not affiliated
-            with, endorsed by, or operated by the Office of ILPPS, the Placement
-            Cell, or the Placement Team of MIT, Manipal.
+            Disclaimer: PlaceMIT is an independent student initiative and is not
+            affiliated with, endorsed by, or operated by the Office of ILPPS,
+            the Placement Cell, or the Placement Team of MIT, Manipal.
           </strong>
         </p>
 

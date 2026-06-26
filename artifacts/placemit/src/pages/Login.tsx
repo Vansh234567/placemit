@@ -128,6 +128,20 @@ export default function LoginPage() {
           <strong style={{ color: "#f0f2f5" }}>MIT Manipal</strong>.
           <br />
           Verify with your college email to join.
+          <br />
+          <strong
+            style={{
+              display: "block",
+              marginTop: "12px",
+              fontSize: "12px",
+              opacity: 0.85,
+              lineHeight: 1.5,
+            }}
+          >
+            Disclaimer: PlaceMIT is an independent student initiative and is not affiliated
+            with, endorsed by, or operated by the Office of ILPPS, the Placement
+            Cell, or the Placement Team of MIT, Manipal.
+          </strong>
         </p>
 
         {error && <div style={styles.error}>{error}</div>}

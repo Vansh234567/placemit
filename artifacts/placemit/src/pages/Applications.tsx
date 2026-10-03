@@ -1,4 +1,4 @@
-import { useListApplications, useUpdateApplication, getListApplicationsQueryKey } from "@workspace/api-client-react"
+import { useListApplications, useUpdateApplication, getListApplicationsQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
